@@ -53,7 +53,7 @@ async function convert() {
     document.getElementById('result-analogy').textContent = `${data.input} ${data.food} ${data.analogy}`;
     document.getElementById('visual').src = `/api/visual?food=${encodeURIComponent(food)}&amount=${amount}&unit=${encodeURIComponent(unit)}`;
     document.getElementById('result-weight').textContent = `也就是 ${data.grams} 克 = ${data.jin} 斤 = ${data.liang} 两`;
-    const label = data.price_source === '真实' ? '真实价格' : '估算价格';
+    const label = data.price_source === '真实' ? '批发参考价' : '估算价格';
     let priceText = `${label}：约 ${data.price} 元（每斤 ${data.price_per_jin} 元）`;
     if (data.updated_at) priceText += ` · 更新于 ${data.updated_at}`;
     document.getElementById('result-price').textContent = priceText;

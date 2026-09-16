@@ -50,3 +50,15 @@ def create_recipe(
     except Exception:
         db.rollback()
     return RedirectResponse("/recipes", status_code=303)
+
+
+@router.post("/recipes/{recipe_id}/delete")
+def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
+    try:
+        recipe = db.get(Recipe, recipe_id)
+        if recipe is not None:
+            db.delete(recipe)
+            db.commit()
+    except Exception:
+        db.rollback()
+    return RedirectResponse("/recipes", status_code=303)

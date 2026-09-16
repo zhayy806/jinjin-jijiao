@@ -227,6 +227,16 @@ button:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink);
 .recipe-card h3 { font-size: 20px; margin-bottom: 8px; }
 .recipe-card .ing, .recipe-card .steps { color: var(--muted); font-size: 15px; white-space: pre-wrap; }
 .recipe-card strong { color: var(--ink); }
+.delete-btn {
+  width: auto;
+  margin-top: 14px;
+  padding: 5px 16px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--muted);
+  box-shadow: none;
+}
+.delete-btn:hover { background: #fdecec; color: #c0392b; transform: none; }
 .empty { text-align: center; color: var(--muted); }
 
 footer {
