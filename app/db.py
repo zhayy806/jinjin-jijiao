@@ -24,6 +24,13 @@ def _database_url() -> URL:
     )
 
 
-engine = create_engine(_database_url(), pool_pre_ping=True)
+def _connect_args() -> dict:
+    """云数据库（如 TiDB）需要 TLS 时，设 MYSQL_SSL=1 开启加密连接。"""
+    if os.getenv("MYSQL_SSL", "") == "1":
+        return {"ssl": {"ssl_verify_cert": False}}
+    return {}
+
+
+engine = create_engine(_database_url(), connect_args=_connect_args(), pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 Base = declarative_base()
