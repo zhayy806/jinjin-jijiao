@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}购物清单 · 斤斤计较{% endblock %}
+
+{% block content %}
+<section class="converter">
+  <h1>我的购物清单</h1>
+  <p class="subtitle">把你「加入清单」的菜，汇总成要买什么、一共多少钱。</p>
+
+  {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
+
+  {% if recipe_names %}
+  <p class="subtitle">已加入：{% for n in recipe_names %}{{ n }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
+  {% endif %}
+
+  <div class="card sketch">
+    {% if items %}
+    <table class="shop-table">
+      <tr><th>食材</th><th>要买多少</th><th>价格</th></tr>
+      {% for it in items %}
+      <tr>
+        <td>{{ it.food }}</td>
+        <td>{{ it.grams }} 克（{{ it.jin }} 斤）</td>
+        <td>{% if it.price %}{{ it.price }} 元{% else %}暂无{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    <p class="grand-total">合计 ≈ <strong>{{ total }}</strong> 元</p>
+    {% else %}
+    <p class="empty">清单是空的。去「我的菜谱」给喜欢的菜点「加入清单」吧～</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

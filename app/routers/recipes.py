@@ -106,3 +106,15 @@ def delete_recipe(recipe_id: int, db: Session = Depends(get_db)):
     except Exception:
         db.rollback()
     return RedirectResponse("/recipes", status_code=303)
+
+
+@router.post("/recipes/{recipe_id}/toggle-list")
+def toggle_list(recipe_id: int, db: Session = Depends(get_db)):
+    try:
+        recipe = db.get(Recipe, recipe_id)
+        if recipe is not None:
+            recipe.in_list = not recipe.in_list
+            db.commit()
+    except Exception:
+        db.rollback()
+    return RedirectResponse("/recipes", status_code=303)

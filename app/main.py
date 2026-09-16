@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from . import models  # noqa: F401  确保数据表被注册
 from .db import Base, engine
-from .routers import recipes
+from .routers import recipes, shopping
 from .scraper import get_last_update, get_latest_price, scrape_prices
 from .services import portion, visual
 
@@ -53,6 +53,7 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 app.include_router(recipes.router)
+app.include_router(shopping.router)
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -1,7 +1,7 @@
 """数据表定义。"""
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from .db import Base
@@ -15,6 +15,7 @@ class Recipe(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200), nullable=False)
     steps = Column(Text, default="")
+    in_list = Column(Boolean, default=False)  # 是否加入购物清单
     created_at = Column(DateTime, default=datetime.utcnow)
 
     ingredients = relationship(

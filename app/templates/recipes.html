@@ -62,9 +62,14 @@
         {% endfor %}
       </ul>
       {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
-      <form method="post" action="/recipes/{{ row.recipe.id }}/delete" onsubmit="return confirm('确定删除这道菜吗？')">
-        <button type="submit" class="delete-btn">删除</button>
-      </form>
+      <div class="actions">
+        <form method="post" action="/recipes/{{ row.recipe.id }}/toggle-list">
+          <button type="submit" class="toggle-btn">{{ '移出清单' if row.recipe.in_list else '加入清单' }}</button>
+        </form>
+        <form method="post" action="/recipes/{{ row.recipe.id }}/delete" onsubmit="return confirm('确定删除这道菜吗？')">
+          <button type="submit" class="delete-btn">删除</button>
+        </form>
+      </div>
     </div>
     {% else %}
       {% if not db_error %}<p class="empty">还没有菜谱，先加一道你爱吃的菜吧～</p>{% endif %}
