@@ -12,7 +12,8 @@ def test_convert_basic():
     assert r["grams"] == 300
     assert r["jin"] == 0.6
     assert r["liang"] == 6.0
-    assert r["price_per_jin"] == 16  # 默认估算价
+    assert r["price"] is None  # 无真实价时，不编造价格
+    assert r["price_per_jin"] is None
 
 
 def test_convert_real_price_override():

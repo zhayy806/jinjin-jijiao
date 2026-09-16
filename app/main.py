@@ -80,7 +80,7 @@ def api_convert(food: str, amount: float, unit: str):
         real_price = None
         last_update = None
     result = portion.convert(food, amount, unit, price_per_jin=real_price)
-    result["price_source"] = "真实" if real_price else "估算"
+    result["price_source"] = "真实" if real_price else "无数据"
     result["updated_at"] = last_update.strftime("%Y-%m-%d %H:%M") if last_update else None
     return result
 
