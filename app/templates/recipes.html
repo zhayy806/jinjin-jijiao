@@ -62,16 +62,17 @@
     <h2 class="cat-title">{{ category }} <span class="cat-count">{{ rows|length }} 道</span></h2>
     {% for row in rows %}
     <div class="recipe-card sketch2">
-      <h3>🍽️ {{ row.recipe.name }} <span class="total">≈ {{ row.total }} 元</span></h3>
-      <ul class="ing-list">
+      <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge">{{ row.recipe.category }}</span> <span class="total">≈ {{ row.total }} 元</span></h3>
+      <div class="ing-chips">
         {% for it in row["items"] %}
-        <li>
-          {{ it.food }} {{ it.quantity }}{{ it.unit }}
-          {% if it.grams %} · ≈ {{ it.grams }} 克{% endif %}
-          {% if it.price %} · {{ it.price }} 元{% else %} · 暂无价格{% endif %}
-        </li>
+        <span class="ing-chip">
+          <span class="emoji">{{ it.emoji }}</span>
+          {{ it.food }}
+          <span class="amount">{{ it.quantity }}{{ it.unit }}{% if it.grams %} · {{ it.grams }}克{% endif %}</span>
+          {% if it.price %}<span class="price">{{ it.price }}元</span>{% endif %}
+        </span>
         {% endfor %}
-      </ul>
+      </div>
       {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
       <div class="actions">
         <form method="post" action="/recipes/{{ row.recipe.id }}/toggle-list">

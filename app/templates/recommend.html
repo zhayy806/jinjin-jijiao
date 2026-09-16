@@ -14,11 +14,16 @@
     <h2 class="recipe-name">🍽️ {{ row.recipe.name }}</h2>
     <p class="recipe-cat">【{{ row.recipe.category }}】</p>
     <p class="recipe-total">这顿饭 ≈ <strong>{{ row.total }}</strong> 元</p>
-    <ul class="ing-list">
+    <div class="ing-chips" style="justify-content: center;">
       {% for it in row["items"] %}
-      <li>{{ it.food }} {{ it.quantity }}{{ it.unit }} · ≈ {{ it.grams }} 克 · {{ it.price }} 元</li>
+      <span class="ing-chip">
+        <span class="emoji">{{ it.emoji }}</span>
+        {{ it.food }}
+        <span class="amount">{{ it.quantity }}{{ it.unit }}{% if it.grams %} · {{ it.grams }}克{% endif %}</span>
+        {% if it.price %}<span class="price">{{ it.price }}元</span>{% endif %}
+      </span>
       {% endfor %}
-    </ul>
+    </div>
     {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
     <div class="actions" style="justify-content: center;">
       <a class="btn" href="/recommend">换一道 →</a>

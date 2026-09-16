@@ -39,6 +39,7 @@ def _enrich(recipe: Recipe) -> dict:
         items.append(
             {
                 "food": ing.food,
+                "emoji": portion.FOODS.get(ing.food, {}).get("food_emoji", "🍽️"),
                 "quantity": ing.quantity,
                 "unit": ing.unit,
                 "grams": round(grams, 1) if grams else None,
