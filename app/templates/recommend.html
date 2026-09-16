@@ -12,7 +12,7 @@
   {% if row %}
   <div class="card sketch">
     <h2 class="recipe-name">🍽️ {{ row.recipe.name }}</h2>
-    <p class="recipe-cat">【{{ row.recipe.category }}】</p>
+    <p class="recipe-cat"><span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></p>
     <p class="recipe-total">这顿饭 ≈ <strong>{{ row.total }}</strong> 元</p>
     <div class="ing-chips" style="justify-content: center;">
       {% for it in row["items"] %}

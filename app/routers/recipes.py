@@ -50,6 +50,13 @@ def _enrich(recipe: Recipe) -> dict:
 
 
 CATEGORY_ORDER = ["中餐", "西餐", "汤羹", "主食", "早餐"]
+CATEGORY_COLORS = {
+    "中餐": "#ef4444",
+    "西餐": "#3b82f6",
+    "汤羹": "#16a34a",
+    "主食": "#f59e0b",
+    "早餐": "#ec4899",
+}
 
 
 @router.get("/recipes", response_class=HTMLResponse)
@@ -72,12 +79,24 @@ def list_recipes(request: Request, db: Session = Depends(get_db)):
                 ordered.append((c, groups[c]))
         return templates.TemplateResponse(
             "recipes.html",
-            {"request": request, "groups": ordered, "foods": portion.FOODS, "db_error": None},
+            {
+                "request": request,
+                "groups": ordered,
+                "foods": portion.FOODS,
+                "cat_colors": CATEGORY_COLORS,
+                "db_error": None,
+            },
         )
     except Exception:
         return templates.TemplateResponse(
             "recipes.html",
-            {"request": request, "groups": [], "foods": portion.FOODS, "db_error": DB_DOWN_MSG},
+            {
+                "request": request,
+                "groups": [],
+                "foods": portion.FOODS,
+                "cat_colors": CATEGORY_COLORS,
+                "db_error": DB_DOWN_MSG,
+            },
         )
 
 
@@ -124,11 +143,13 @@ def recommend(request: Request, db: Session = Depends(get_db)):
             return RedirectResponse("/recipes", status_code=303)
         row = _enrich(recipe)
         return templates.TemplateResponse(
-            "recommend.html", {"request": request, "row": row, "db_error": None}
+            "recommend.html",
+            {"request": request, "row": row, "cat_colors": CATEGORY_COLORS, "db_error": None},
         )
     except Exception:
         return templates.TemplateResponse(
-            "recommend.html", {"request": request, "row": None, "db_error": DB_DOWN_MSG}
+            "recommend.html",
+            {"request": request, "row": None, "cat_colors": CATEGORY_COLORS, "db_error": DB_DOWN_MSG},
         )
 
 

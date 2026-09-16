@@ -62,7 +62,7 @@
     <h2 class="cat-title">{{ category }} <span class="cat-count">{{ rows|length }} 道</span></h2>
     {% for row in rows %}
     <div class="recipe-card sketch2">
-      <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge">{{ row.recipe.category }}</span> <span class="total">≈ {{ row.total }} 元</span></h3>
+      <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span> <span class="total">≈ {{ row.total }} 元</span></h3>
       <div class="ing-chips">
         {% for it in row["items"] %}
         <span class="ing-chip">
