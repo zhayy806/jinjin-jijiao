@@ -1,0 +1,244 @@
+:root {
+  --paper: #fdf6e3;
+  --card: #fffdf6;
+  --ink: #2d2a26;
+  --muted: #7a6f63;
+  --accent: #e8590c;
+  --green: #2e7d4f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "LXGW WenKai", "Noto Sans SC", -apple-system, "PingFang SC", sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.8;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 手绘波浪边框（两种起伏，营造手绘感） */
+.sketch {
+  border: 2.5px solid var(--ink);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+.sketch2 {
+  border: 2.5px solid var(--ink);
+  border-radius: 15px 225px 15px 255px / 255px 15px 225px 15px;
+}
+
+/* ===== 导航 ===== */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: var(--paper);
+  border-bottom: 2.5px solid var(--ink);
+}
+.logo {
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  font-size: 24px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.nav nav { display: flex; gap: 12px; align-items: center; }
+.nav nav a {
+  padding: 8px 18px;
+  text-decoration: none;
+  font-size: 17px;
+  color: var(--ink);
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  transition: color 0.15s;
+}
+.nav nav a:hover { color: var(--accent); }
+.nav nav a.primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 3px 3px 0 rgba(45, 42, 38, 0.22);
+}
+
+main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 24px 70px; }
+
+/* ===== Hero ===== */
+.hero { text-align: center; padding: 64px 0 32px; }
+.hero h1 {
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  font-size: 46px;
+  line-height: 1.4;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.hero h1 .accent { color: var(--accent); }
+.squiggle { display: block; width: 240px; margin: 6px auto 20px; }
+.hero .subtitle {
+  font-size: 19px;
+  color: var(--muted);
+  max-width: 560px;
+  margin: 0 auto 28px;
+}
+
+/* 贴纸食材 */
+.stickers { display: flex; justify-content: center; gap: 14px; margin: 8px 0 32px; flex-wrap: wrap; }
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 66px;
+  height: 66px;
+  background: var(--card);
+  border: 2.5px solid var(--ink);
+  border-radius: 50%;
+  font-size: 34px;
+  box-shadow: 3px 3px 0 rgba(45, 42, 38, 0.16);
+}
+.sticker:nth-child(2) { transform: rotate(-6deg); }
+.sticker:nth-child(3) { transform: rotate(5deg); }
+.sticker:nth-child(4) { transform: rotate(-3deg); }
+.sticker:nth-child(5) { transform: rotate(7deg); }
+
+.cta {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: 14px 40px;
+  text-decoration: none;
+  font-size: 20px;
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  border: 2.5px solid var(--ink);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: all 0.12s;
+}
+.cta:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+
+/* 演示卡片 */
+.demo-wrap { margin: 48px auto 0; max-width: 620px; }
+.demo-card {
+  background: var(--card);
+  padding: 28px 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-1deg);
+}
+.demo-text { text-align: left; }
+.demo-text .d1 { font-size: 22px; font-weight: 700; }
+.demo-text .d2 { font-size: 16px; color: var(--muted); margin-top: 6px; }
+.demo-img img { border-radius: 12px; display: block; border: 2px solid var(--ink); }
+
+/* ===== 特性 ===== */
+.section-title {
+  text-align: center;
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  margin: 72px 0 36px;
+}
+.features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 26px; }
+.feature {
+  background: var(--card);
+  padding: 28px 26px;
+}
+.feature:nth-child(1) { transform: rotate(-1deg); }
+.feature:nth-child(2) { transform: rotate(1deg); }
+.feature:nth-child(3) { transform: rotate(-0.5deg); }
+.feature .sticker { width: 54px; height: 54px; font-size: 28px; margin-bottom: 14px; }
+.feature h3 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.feature p { color: var(--muted); font-size: 16px; }
+
+/* ===== 换算页 ===== */
+.converter { padding-top: 48px; }
+.converter h1 {
+  text-align: center;
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  margin-bottom: 12px;
+}
+.subtitle { text-align: center; color: var(--muted); margin-bottom: 36px; font-size: 17px; }
+.card {
+  background: var(--card);
+  padding: 34px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.row label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--muted);
+  flex: 1;
+  min-width: 120px;
+}
+select, input, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-size: 17px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+}
+textarea { resize: vertical; }
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+button {
+  background: var(--accent);
+  color: #fff;
+  border: 2.5px solid var(--ink);
+  padding: 13px 28px;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  font-size: 19px;
+  font-family: "ZCOOL KuaiLe", "LXGW WenKai", sans-serif;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: all 0.12s;
+}
+button:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+
+.result {
+  margin-top: 24px;
+  background: var(--card);
+  border: 2px dashed var(--ink);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+}
+.result .big-line { font-size: 21px; font-weight: 700; margin-bottom: 8px; }
+.result .visual { display: block; margin: 14px auto; max-width: 100%; height: auto; border-radius: 10px; }
+.result .sub-line { font-size: 15px; color: var(--muted); margin-bottom: 6px; }
+.result .price-line { font-size: 16px; font-weight: 700; color: var(--accent); }
+.hidden { display: none; }
+
+/* 菜谱 */
+.form-title { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+.recipe-list { margin: 28px auto 0; max-width: 600px; display: grid; gap: 18px; }
+.recipe-card { background: var(--card); padding: 20px 24px; }
+.recipe-card h3 { font-size: 20px; margin-bottom: 8px; }
+.recipe-card .ing, .recipe-card .steps { color: var(--muted); font-size: 15px; white-space: pre-wrap; }
+.recipe-card strong { color: var(--ink); }
+.empty { text-align: center; color: var(--muted); }
+
+footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  font-size: 15px;
+  border-top: 2.5px solid var(--ink);
+  background: var(--card);
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 32px; }
+  .nav { padding: 14px 20px; }
+}

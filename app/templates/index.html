@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}斤斤计较 · 做饭小助手{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>今晚吃什么、买多少？<br><span class="accent">我帮你搞定</span></h1>
+  <svg class="squiggle" viewBox="0 0 220 14" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M2 9 Q 30 2 58 9 T 114 9 T 170 9 T 218 7" fill="none" stroke="#e8590c" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <p class="subtitle">一个做饭小助手：选菜谱、排菜单、算买菜钱。做饭时看不懂「斤两」？点一下就知道。</p>
+  <a class="cta" href="/converter">开始做饭 →</a>
+
+  <div class="demo-wrap">
+    <div class="demo-card sketch">
+      <div class="demo-text">
+        <div class="d1">比如：猪肉 300 克，到底买多少？</div>
+        <div class="d2">≈ 1.2 个拳头，6 两，约 9.6 元</div>
+      </div>
+      <div class="demo-img">
+        <img src="/api/visual?food=%E7%8C%AA%E8%82%89&amount=300&unit=%E5%85%8B" alt="猪肉300克可视化示意图">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="section-title">做饭的小事，我帮你</h2>
+  <div class="features">
+    <div class="feature sketch">
+      <span class="sticker">🍳</span>
+      <h3>今晚吃什么</h3>
+      <p>选菜谱、排一周菜单，再也不纠结「今晚吃啥」。（即将上线）</p>
+    </div>
+    <div class="feature sketch2">
+      <span class="sticker">✊</span>
+      <h3>看懂斤两</h3>
+      <p>300 克 ≈ 一个拳头，配图一看就懂。（已上线）</p>
+    </div>
+    <div class="feature sketch">
+      <span class="sticker">🧺</span>
+      <h3>算清买菜钱</h3>
+      <p>自动生成购物清单，花多少钱心里有数。（即将上线）</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

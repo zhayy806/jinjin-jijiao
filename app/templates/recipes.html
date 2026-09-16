@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}我的菜谱 · 斤斤计较{% endblock %}
+
+{% block content %}
+<section class="converter">
+  <h1>我的菜谱</h1>
+  <p class="subtitle">存下你爱做的菜，做饭时随时翻。</p>
+
+  {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
+
+  <div class="card sketch">
+    <h2 class="form-title">➕ 加一道菜</h2>
+    <form method="post" action="/recipes">
+      <div class="row">
+        <label>菜名
+          <input name="name" required placeholder="比如：西红柿炒鸡蛋">
+        </label>
+      </div>
+      <div class="row">
+        <label>食材和用量
+          <textarea name="ingredients" rows="3" placeholder="西红柿 2 个、鸡蛋 3 个、盐少许"></textarea>
+        </label>
+      </div>
+      <div class="row">
+        <label>做法
+          <textarea name="steps" rows="4" placeholder="1. 炒鸡蛋 2. 下西红柿…"></textarea>
+        </label>
+      </div>
+      <button type="submit">保存这道菜</button>
+    </form>
+  </div>
+
+  <div class="recipe-list">
+    {% for r in recipes %}
+    <div class="recipe-card sketch2">
+      <h3>🍽️ {{ r.name }}</h3>
+      {% if r.ingredients %}<p class="ing"><strong>食材：</strong>{{ r.ingredients }}</p>{% endif %}
+      {% if r.steps %}<p class="steps"><strong>做法：</strong>{{ r.steps }}</p>{% endif %}
+    </div>
+    {% else %}
+      {% if not db_error %}<p class="empty">还没有菜谱，先加一道你爱吃的菜吧～</p>{% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
