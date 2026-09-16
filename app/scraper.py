@@ -3,6 +3,7 @@
 数据源：北京新发地农产品批发市场（公开批发价，元/斤）。
 流程：POST 请求价格接口 → 解析「品名 + 平均价」→ 覆盖写入 MySQL。
 """
+import logging
 from datetime import datetime
 
 import httpx
@@ -10,6 +11,8 @@ from sqlalchemy import func
 
 from .db import SessionLocal
 from .models import Price
+
+logger = logging.getLogger("jinjin.scraper")
 
 URL = "http://www.xinfadi.com.cn/getPriceData.html"
 HEADERS = {
@@ -34,11 +37,8 @@ FOOD_ALIASES = {
 }
 
 
-def fetch_prices() -> list:
-    """请求新发地价格接口，返回 [{food, price, place, source}, ...]。"""
-    resp = httpx.post(URL, headers=HEADERS, data={"limit": 3000, "current": 1}, timeout=25)
-    resp.raise_for_status()
-    payload = resp.json()
+def parse_payload(payload: dict) -> list:
+    """把接口返回的 JSON 解析成 [{food, price, place, source}, ...]。"""
     rows = []
     for item in payload.get("list", []):
         name = (item.get("prodName") or "").strip()
@@ -53,9 +53,20 @@ def fetch_prices() -> list:
     return rows
 
 
+def fetch_prices() -> list:
+    """请求新发地价格接口并解析。"""
+    resp = httpx.post(URL, headers=HEADERS, data={"limit": 3000, "current": 1}, timeout=25)
+    resp.raise_for_status()
+    return parse_payload(resp.json())
+
+
 def scrape_prices() -> int:
     """抓取最新价格并覆盖写入数据库，返回写入条数。"""
-    rows = fetch_prices()
+    try:
+        rows = fetch_prices()
+    except Exception as e:
+        logger.warning("抓取价格失败：%s", e)
+        return 0
     if not rows:
         return 0
     now = datetime.utcnow()
@@ -64,6 +75,7 @@ def scrape_prices() -> int:
         for r in rows:
             db.add(Price(**r, scraped_at=now))
         db.commit()
+    logger.info("抓取价格完成：%d 条", len(rows))
     return len(rows)
 
 

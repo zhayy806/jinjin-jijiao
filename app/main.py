@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
@@ -17,6 +18,9 @@ from .services import portion, visual
 
 BASE_DIR = Path(__file__).resolve().parent
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logger = logging.getLogger("jinjin")
+
 scheduler = BackgroundScheduler()
 
 
@@ -25,16 +29,16 @@ async def lifespan(app: FastAPI):
     # 建表；MySQL 未配置好时不影响其他功能
     try:
         Base.metadata.create_all(bind=engine)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("MySQL 建表失败（可能未配置）：%s", e)
     # 定时任务：每 24 小时抓一次菜价，启动时先跑一次
     try:
         scheduler.add_job(
             scrape_prices, IntervalTrigger(hours=24), next_run_time=datetime.now()
         )
         scheduler.start()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("定时任务启动失败：%s", e)
     yield
     scheduler.shutdown(wait=False)
 
