@@ -5,7 +5,7 @@
 {% block content %}
 <section class="converter">
   <h1>我的菜谱</h1>
-  <p class="subtitle">存下你爱做的菜，做饭时随时翻。</p>
+  <p class="subtitle">加一道菜，自动算出每个食材多少克、多少钱、一共花多少。</p>
 
   {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
 
@@ -17,11 +17,28 @@
           <input name="name" required placeholder="比如：西红柿炒鸡蛋">
         </label>
       </div>
-      <div class="row">
-        <label>食材和用量
-          <textarea name="ingredients" rows="3" placeholder="西红柿 2 个、鸡蛋 3 个、盐少许"></textarea>
-        </label>
+
+      <div class="ing-label">食材（选食材 + 填数量 + 选单位）</div>
+      <div class="ingredient-rows">
+        {% for i in range(6) %}
+        <div class="ing-row">
+          <select name="food">
+            <option value="">— 选食材 —</option>
+            {% for f in foods %}
+            <option value="{{ f }}">{{ f }}</option>
+            {% endfor %}
+          </select>
+          <input name="quantity" type="number" step="0.5" min="0" placeholder="数量">
+          <select name="unit">
+            <option value="个">个</option>
+            <option value="斤">斤</option>
+            <option value="两">两</option>
+            <option value="克">克</option>
+          </select>
+        </div>
+        {% endfor %}
       </div>
+
       <div class="row">
         <label>做法
           <textarea name="steps" rows="4" placeholder="1. 炒鸡蛋 2. 下西红柿…"></textarea>
@@ -32,12 +49,20 @@
   </div>
 
   <div class="recipe-list">
-    {% for r in recipes %}
+    {% for row in rows %}
     <div class="recipe-card sketch2">
-      <h3>🍽️ {{ r.name }}</h3>
-      {% if r.ingredients %}<p class="ing"><strong>食材：</strong>{{ r.ingredients }}</p>{% endif %}
-      {% if r.steps %}<p class="steps"><strong>做法：</strong>{{ r.steps }}</p>{% endif %}
-      <form method="post" action="/recipes/{{ r.id }}/delete" onsubmit="return confirm('确定删除这道菜吗？')">
+      <h3>🍽️ {{ row.recipe.name }} <span class="total">≈ {{ row.total }} 元</span></h3>
+      <ul class="ing-list">
+        {% for it in row["items"] %}
+        <li>
+          {{ it.food }} {{ it.quantity }}{{ it.unit }}
+          {% if it.grams %} · ≈ {{ it.grams }} 克{% endif %}
+          {% if it.price %} · {{ it.price }} 元{% else %} · 暂无价格{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+      <form method="post" action="/recipes/{{ row.recipe.id }}/delete" onsubmit="return confirm('确定删除这道菜吗？')">
         <button type="submit" class="delete-btn">删除</button>
       </form>
     </div>

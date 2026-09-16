@@ -38,6 +38,15 @@ def to_grams(amount: float, unit: str) -> float:
     return amount * UNITS[unit]
 
 
+def grams_from(food: str, quantity: float, unit: str):
+    """根据食材、数量、单位算出克数（「个」按参照物重量换算）。"""
+    if unit in UNITS:
+        return to_grams(quantity, unit)
+    if unit == "个":
+        return quantity * FOODS[food]["ref_grams"]
+    return None
+
+
 def convert(food: str, amount: float, unit: str, price_per_jin: float = None) -> dict:
     """完整换算：斤两 + 可视化。price_per_jin 为爬虫抓到的真实价，没有则为 None。"""
     info = FOODS[food]

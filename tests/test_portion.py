@@ -26,3 +26,9 @@ def test_convert_analogy():
     r = portion.convert("鸡蛋", 250, "克")  # 半斤 = 5 个鸡蛋
     assert "个鸡蛋" in r["analogy"]
     assert r["liang"] == 5.0
+
+
+def test_grams_from():
+    assert portion.grams_from("西红柿", 2, "个") == 300  # 2 个 × 150 克
+    assert portion.grams_from("猪肉", 1, "斤") == 500
+    assert portion.grams_from("猪肉", 100, "克") == 100

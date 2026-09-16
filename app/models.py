@@ -1,7 +1,8 @@
 """数据表定义。"""
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, Integer, String, Text
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import relationship
 
 from .db import Base
 
@@ -13,9 +14,26 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200), nullable=False)
-    ingredients = Column(Text, default="")
     steps = Column(Text, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    ingredients = relationship(
+        "Ingredient", back_populates="recipe", cascade="all, delete-orphan"
+    )
+
+
+class Ingredient(Base):
+    """菜谱食材表（结构化：每条 = 食材 + 数量 + 单位）。"""
+
+    __tablename__ = "ingredients"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    recipe_id = Column(Integer, ForeignKey("recipes.id"), nullable=False)
+    food = Column(String(50), nullable=False)
+    quantity = Column(Float, nullable=False)
+    unit = Column(String(10), nullable=False, default="个")
+
+    recipe = relationship("Recipe", back_populates="ingredients")
 
 
 class Price(Base):
@@ -27,5 +45,5 @@ class Price(Base):
     food = Column(String(50), nullable=False)
     price = Column(Float, nullable=False)  # 单位：元/斤
     place = Column(String(100), default="")
-    source = Column(String(50), default="惠农网")
+    source = Column(String(50), default="新发地")
     scraped_at = Column(DateTime, default=datetime.utcnow)

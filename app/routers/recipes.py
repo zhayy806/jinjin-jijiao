@@ -1,13 +1,15 @@
-"""菜谱：浏览 + 添加。"""
+"""菜谱：浏览、添加、删除，并自动算出食材重量和价格。"""
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from ..db import SessionLocal
-from ..models import Recipe
+from ..models import Ingredient, Recipe
+from ..scraper import get_latest_price
+from ..services import portion
 
 router = APIRouter()
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
@@ -23,29 +25,71 @@ def get_db():
         db.close()
 
 
+def _enrich(recipe: Recipe) -> dict:
+    """给一道菜谱的每个食材，算出克数和价格，并汇总总价。"""
+    items = []
+    total = 0.0
+    for ing in recipe.ingredients:
+        grams = portion.grams_from(ing.food, ing.quantity, ing.unit)
+        ppj = get_latest_price(ing.food)
+        price = round(grams / 500 * ppj, 2) if (grams and ppj) else None
+        if price:
+            total += price
+        items.append(
+            {
+                "food": ing.food,
+                "quantity": ing.quantity,
+                "unit": ing.unit,
+                "grams": round(grams, 1) if grams else None,
+                "price": price,
+            }
+        )
+    return {"recipe": recipe, "items": items, "total": round(total, 2)}
+
+
 @router.get("/recipes", response_class=HTMLResponse)
 def list_recipes(request: Request, db: Session = Depends(get_db)):
     try:
-        recipes = db.query(Recipe).order_by(Recipe.id.desc()).all()
+        recipes = (
+            db.query(Recipe)
+            .options(selectinload(Recipe.ingredients))
+            .order_by(Recipe.id.desc())
+            .all()
+        )
+        rows = [_enrich(r) for r in recipes]
         return templates.TemplateResponse(
-            "recipes.html", {"request": request, "recipes": recipes, "db_error": None}
+            "recipes.html",
+            {"request": request, "rows": rows, "foods": portion.FOODS, "db_error": None},
         )
     except Exception:
         return templates.TemplateResponse(
-            "recipes.html", {"request": request, "recipes": [], "db_error": DB_DOWN_MSG}
+            "recipes.html",
+            {"request": request, "rows": [], "foods": portion.FOODS, "db_error": DB_DOWN_MSG},
         )
 
 
 @router.post("/recipes")
 def create_recipe(
     name: str = Form(...),
-    ingredients: str = Form(""),
     steps: str = Form(""),
+    food: list[str] = Form(default=[]),
+    quantity: list[str] = Form(default=[]),
+    unit: list[str] = Form(default=[]),
     db: Session = Depends(get_db),
 ):
     try:
-        recipe = Recipe(name=name.strip(), ingredients=ingredients.strip(), steps=steps.strip())
+        recipe = Recipe(name=name.strip(), steps=steps.strip())
         db.add(recipe)
+        db.flush()  # 拿到 recipe.id
+        for f, q, u in zip(food, quantity, unit):
+            f = (f or "").strip()
+            if not f or f not in portion.FOODS:
+                continue
+            try:
+                q_val = float(q)
+            except (ValueError, TypeError):
+                continue
+            db.add(Ingredient(recipe_id=recipe.id, food=f, quantity=q_val, unit=u))
         db.commit()
     except Exception:
         db.rollback()

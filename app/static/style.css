@@ -237,6 +237,13 @@ button:hover { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink);
   box-shadow: none;
 }
 .delete-btn:hover { background: #fdecec; color: #c0392b; transform: none; }
+.ing-label { font-size: 14px; color: var(--muted); margin: 4px 0 8px; font-weight: 500; }
+.ingredient-rows { display: grid; gap: 8px; margin-bottom: 20px; }
+.ing-row { display: grid; grid-template-columns: 1.2fr 0.8fr 0.7fr; gap: 8px; }
+.ing-row select, .ing-row input { width: 100%; }
+.ing-list { list-style: none; margin: 8px 0 12px; padding: 0; }
+.ing-list li { font-size: 15px; color: var(--muted); padding: 2px 0; }
+.total { font-size: 15px; color: var(--accent); font-weight: 700; float: right; }
 .empty { text-align: center; color: var(--muted); }
 
 footer {
