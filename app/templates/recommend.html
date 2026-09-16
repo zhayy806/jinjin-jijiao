@@ -12,6 +12,7 @@
   {% if row %}
   <div class="card sketch">
     <h2 class="recipe-name">🍽️ {{ row.recipe.name }}</h2>
+    <p class="recipe-cat">【{{ row.recipe.category }}】</p>
     <p class="recipe-total">这顿饭 ≈ <strong>{{ row.total }}</strong> 元</p>
     <ul class="ing-list">
       {% for it in row["items"] %}

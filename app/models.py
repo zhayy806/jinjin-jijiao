@@ -14,6 +14,7 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(200), nullable=False)
+    category = Column(String(20), default="中餐")
     steps = Column(Text, default="")
     in_list = Column(Boolean, default=False)  # 是否加入购物清单
     created_at = Column(DateTime, default=datetime.utcnow)

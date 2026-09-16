@@ -5,7 +5,7 @@
 {% block content %}
 <section class="converter">
   <h1>我的菜谱</h1>
-  <p class="subtitle">加一道菜，自动算出每个食材多少克、多少钱、一共花多少。</p>
+  <p class="subtitle">按分类整理，加一道菜自动算出重量、价格、总价。</p>
 
   {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
 
@@ -15,6 +15,15 @@
       <div class="row">
         <label>菜名
           <input name="name" required placeholder="比如：西红柿炒鸡蛋">
+        </label>
+        <label>分类
+          <select name="category">
+            <option value="中餐">中餐</option>
+            <option value="西餐">西餐</option>
+            <option value="汤羹">汤羹</option>
+            <option value="主食">主食</option>
+            <option value="早餐">早餐</option>
+          </select>
         </label>
       </div>
 
@@ -49,6 +58,8 @@
   </div>
 
   <div class="recipe-list">
+    {% for category, rows in groups %}
+    <h2 class="cat-title">{{ category }} <span class="cat-count">{{ rows|length }} 道</span></h2>
     {% for row in rows %}
     <div class="recipe-card sketch2">
       <h3>🍽️ {{ row.recipe.name }} <span class="total">≈ {{ row.total }} 元</span></h3>
@@ -71,6 +82,7 @@
         </form>
       </div>
     </div>
+    {% endfor %}
     {% else %}
       {% if not db_error %}<p class="empty">还没有菜谱，先加一道你爱吃的菜吧～</p>{% endif %}
     {% endfor %}

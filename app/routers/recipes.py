@@ -48,6 +48,9 @@ def _enrich(recipe: Recipe) -> dict:
     return {"recipe": recipe, "items": items, "total": round(total, 2)}
 
 
+CATEGORY_ORDER = ["中餐", "西餐", "汤羹", "主食", "早餐"]
+
+
 @router.get("/recipes", response_class=HTMLResponse)
 def list_recipes(request: Request, db: Session = Depends(get_db)):
     try:
@@ -58,20 +61,29 @@ def list_recipes(request: Request, db: Session = Depends(get_db)):
             .all()
         )
         rows = [_enrich(r) for r in recipes]
+        groups = {}
+        for r in rows:
+            cat = r["recipe"].category or "其他"
+            groups.setdefault(cat, []).append(r)
+        ordered = [(c, groups[c]) for c in CATEGORY_ORDER if c in groups]
+        for c in groups:
+            if c not in CATEGORY_ORDER:
+                ordered.append((c, groups[c]))
         return templates.TemplateResponse(
             "recipes.html",
-            {"request": request, "rows": rows, "foods": portion.FOODS, "db_error": None},
+            {"request": request, "groups": ordered, "foods": portion.FOODS, "db_error": None},
         )
     except Exception:
         return templates.TemplateResponse(
             "recipes.html",
-            {"request": request, "rows": [], "foods": portion.FOODS, "db_error": DB_DOWN_MSG},
+            {"request": request, "groups": [], "foods": portion.FOODS, "db_error": DB_DOWN_MSG},
         )
 
 
 @router.post("/recipes")
 def create_recipe(
     name: str = Form(...),
+    category: str = Form("中餐"),
     steps: str = Form(""),
     food: list[str] = Form(default=[]),
     quantity: list[str] = Form(default=[]),
@@ -79,7 +91,7 @@ def create_recipe(
     db: Session = Depends(get_db),
 ):
     try:
-        recipe = Recipe(name=name.strip(), steps=steps.strip())
+        recipe = Recipe(name=name.strip(), category=category.strip(), steps=steps.strip())
         db.add(recipe)
         db.flush()  # 拿到 recipe.id
         for f, q, u in zip(food, quantity, unit):
