@@ -1,7 +1,7 @@
 """菜谱：浏览、添加、删除，并自动算出食材重量和价格。"""
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Query, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func
@@ -27,26 +27,32 @@ def get_db():
 
 
 def _enrich(recipe: Recipe) -> dict:
-    """给一道菜谱的每个食材，算出克数和价格，并汇总总价。"""
+    """给一道菜谱的每个食材，算出克数、价格和热量，并汇总。"""
     items = []
     total = 0.0
+    total_kcal = 0
     for ing in recipe.ingredients:
         grams = portion.grams_from(ing.food, ing.quantity, ing.unit)
         ppj = get_latest_price(ing.food)
         price = round(grams / 500 * ppj, 2) if (grams and ppj) else None
         if price:
             total += price
+        info = portion.FOODS.get(ing.food, {})
+        kcal = round(grams * info.get("calories", 0) / 100) if grams else None
+        if kcal:
+            total_kcal += kcal
         items.append(
             {
                 "food": ing.food,
-                "emoji": portion.FOODS.get(ing.food, {}).get("food_emoji", "🍽️"),
+                "emoji": info.get("food_emoji", "🍽️"),
                 "quantity": ing.quantity,
                 "unit": ing.unit,
                 "grams": round(grams, 1) if grams else None,
                 "price": price,
+                "kcal": kcal,
             }
         )
-    return {"recipe": recipe, "items": items, "total": round(total, 2)}
+    return {"recipe": recipe, "items": items, "total": round(total, 2), "total_kcal": total_kcal}
 
 
 CATEGORY_ORDER = ["中餐", "西餐", "汤羹", "主食", "早餐"]
@@ -127,6 +133,43 @@ def create_recipe(
     except Exception:
         db.rollback()
     return RedirectResponse("/recipes", status_code=303)
+
+
+@router.get("/cook", response_class=HTMLResponse)
+def cook(request: Request, foods: list[str] = Query(default=[]), db: Session = Depends(get_db)):
+    """选食材，看能做出哪些菜。"""
+    try:
+        selected = set(foods)
+        recipes = db.query(Recipe).options(selectinload(Recipe.ingredients)).all()
+        matches = []
+        if selected:
+            for r in recipes:
+                r_foods = {ing.food for ing in r.ingredients}
+                if r_foods and r_foods.issubset(selected):
+                    matches.append(_enrich(r))
+        return templates.TemplateResponse(
+            "cook.html",
+            {
+                "request": request,
+                "foods": portion.FOODS,
+                "selected": selected,
+                "matches": matches,
+                "cat_colors": CATEGORY_COLORS,
+                "db_error": None,
+            },
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            "cook.html",
+            {
+                "request": request,
+                "foods": portion.FOODS,
+                "selected": set(),
+                "matches": [],
+                "cat_colors": CATEGORY_COLORS,
+                "db_error": DB_DOWN_MSG,
+            },
+        )
 
 
 @router.get("/recommend", response_class=HTMLResponse)

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}做菜 · 斤斤计较{% endblock %}
+
+{% block content %}
+<section class="converter">
+  <h1>今天有什么食材？</h1>
+  <p class="subtitle">勾选你手头的食材，看看能做哪些菜。</p>
+
+  {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
+
+  <form method="get" action="/cook">
+    <div class="card" style="max-width: 760px;">
+      <div class="food-picker">
+        {% for f, info in foods.items() %}
+        <label class="food-check {% if f in selected %}checked{% endif %}">
+          <input type="checkbox" name="foods" value="{{ f }}" {% if f in selected %}checked{% endif %}>
+          <span class="f-emoji">{{ info.food_emoji }}</span>
+          <span class="f-name">{{ f }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <button type="submit">看看能做什么菜 →</button>
+    </div>
+  </form>
+
+  {% if selected %}
+  <div class="recipe-list">
+    {% if matches %}
+    <h2 class="cat-title">用这些食材能做 <span class="cat-count">{{ matches|length }} 道</span></h2>
+    {% for row in matches %}
+    <div class="recipe-card">
+      <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></h3>
+      <p class="meta-line">≈ {{ row.total }} 元 · 🔥 {{ row.total_kcal }} 大卡</p>
+      <div class="ing-chips">
+        {% for it in row["items"] %}
+        <span class="ing-chip">
+          <span class="emoji">{{ it.emoji }}</span>
+          {{ it.food }}
+          <span class="amount">{{ it.quantity }}{{ it.unit }}</span>
+        </span>
+        {% endfor %}
+      </div>
+      {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="empty">这些食材做不出一道完整的菜，再多勾选几个食材吧～</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

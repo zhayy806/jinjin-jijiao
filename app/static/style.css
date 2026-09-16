@@ -265,6 +265,23 @@ button:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(255, 87
 /* 推荐页 */
 .recipe-name { font-size: 28px; font-weight: 800; text-align: center; margin-bottom: 6px; }
 .recipe-cat { text-align: center; font-size: 15px; color: var(--muted); margin-bottom: 6px; }
+.food-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+.food-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+.food-check input { display: none; }
+.food-check.checked { background: #fff1e6; border-color: var(--primary); color: var(--primary); font-weight: 700; }
+.f-emoji { font-size: 18px; }
+.meta-line { font-size: 14px; color: var(--primary); font-weight: 700; margin-bottom: 8px; }
 .recipe-total { text-align: center; font-size: 17px; color: var(--muted); margin-bottom: 14px; }
 .recipe-total strong { color: var(--primary); font-size: 24px; }
 .btn {

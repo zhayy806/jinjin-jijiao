@@ -5,6 +5,7 @@
 「几个拳头 / 几个鸡蛋 / 几碗饭」这种一眼就懂的说法。
 
 价格由爬虫从新发地抓取后传入，这里不做任何硬编码价格。
+calories 为每 100 克的估算热量（大卡）。
 """
 
 GRAM_PER_JIN = 500    # 1 斤 = 500 克
@@ -15,19 +16,20 @@ GRAM_PER_LIANG = 50   # 1 两 = 50 克（1 斤 = 10 两）
 #   ref_grams   这个参照物大概多少克
 #   food_emoji  食材本身的图标
 #   ref_emoji   参照物的图标
+#   calories    每 100 克估算热量（大卡）
 FOODS = {
-    "猪肉":   {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🥩", "ref_emoji": "✊"},
-    "牛肉":   {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🥩", "ref_emoji": "✊"},
-    "鸡胸肉": {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🍗", "ref_emoji": "✊"},
-    "排骨":   {"ref_noun": "根",       "ref_grams": 100, "food_emoji": "🍖", "ref_emoji": "🍖"},
-    "鸡蛋":   {"ref_noun": "个鸡蛋",   "ref_grams": 50,  "food_emoji": "🥚", "ref_emoji": "🥚"},
-    "西红柿": {"ref_noun": "个西红柿", "ref_grams": 150, "food_emoji": "🍅", "ref_emoji": "🍅"},
-    "土豆":   {"ref_noun": "个土豆",   "ref_grams": 150, "food_emoji": "🥔", "ref_emoji": "🥔"},
-    "苹果":   {"ref_noun": "个苹果",   "ref_grams": 200, "food_emoji": "🍎", "ref_emoji": "🍎"},
-    "青菜":   {"ref_noun": "把",       "ref_grams": 300, "food_emoji": "🥬", "ref_emoji": "🥬"},
-    "大米":   {"ref_noun": "碗米饭",   "ref_grams": 180, "food_emoji": "🍚", "ref_emoji": "🍚"},
-    "面粉":   {"ref_noun": "碗面粉",   "ref_grams": 150, "food_emoji": "🌾", "ref_emoji": "🥣"},
-    "菌菇":   {"ref_noun": "把",       "ref_grams": 300, "food_emoji": "🍄", "ref_emoji": "🍄"},
+    "猪肉":   {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🥩", "ref_emoji": "✊", "calories": 143},
+    "牛肉":   {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🥩", "ref_emoji": "✊", "calories": 125},
+    "鸡胸肉": {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🍗", "ref_emoji": "✊", "calories": 133},
+    "排骨":   {"ref_noun": "根",       "ref_grams": 100, "food_emoji": "🍖", "ref_emoji": "🍖", "calories": 250},
+    "鸡蛋":   {"ref_noun": "个鸡蛋",   "ref_grams": 50,  "food_emoji": "🥚", "ref_emoji": "🥚", "calories": 144},
+    "西红柿": {"ref_noun": "个西红柿", "ref_grams": 150, "food_emoji": "🍅", "ref_emoji": "🍅", "calories": 18},
+    "土豆":   {"ref_noun": "个土豆",   "ref_grams": 150, "food_emoji": "🥔", "ref_emoji": "🥔", "calories": 77},
+    "苹果":   {"ref_noun": "个苹果",   "ref_grams": 200, "food_emoji": "🍎", "ref_emoji": "🍎", "calories": 52},
+    "青菜":   {"ref_noun": "把",       "ref_grams": 300, "food_emoji": "🥬", "ref_emoji": "🥬", "calories": 20},
+    "大米":   {"ref_noun": "碗米饭",   "ref_grams": 180, "food_emoji": "🍚", "ref_emoji": "🍚", "calories": 130},
+    "面粉":   {"ref_noun": "碗面粉",   "ref_grams": 150, "food_emoji": "🌾", "ref_emoji": "🥣", "calories": 364},
+    "菌菇":   {"ref_noun": "把",       "ref_grams": 300, "food_emoji": "🍄", "ref_emoji": "🍄", "calories": 22},
 }
 
 UNITS = {"克": 1, "两": GRAM_PER_LIANG, "斤": GRAM_PER_JIN}

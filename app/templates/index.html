@@ -4,44 +4,43 @@
 
 {% block content %}
 <section class="hero">
-  <h1>今晚吃什么、买多少？<br><span class="accent">我帮你搞定</span></h1>
+  <h1>今天有什么食材？<br><span class="accent">看看能做什么菜</span></h1>
   <svg class="squiggle" viewBox="0 0 220 14" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M2 9 Q 30 2 58 9 T 114 9 T 170 9 T 218 7" fill="none" stroke="#e8590c" stroke-width="4" stroke-linecap="round"/>
+    <path d="M2 9 Q 30 2 58 9 T 114 9 T 170 9 T 218 7" fill="none" stroke="#ff5722" stroke-width="4" stroke-linecap="round"/>
   </svg>
-  <p class="subtitle">一个做饭小助手：选菜谱、排菜单、算买菜钱。做饭时看不懂「斤两」？点一下就知道。</p>
-  <a class="cta" href="/converter">开始做饭 →</a>
+  <p class="subtitle">选一选你冰箱里的食材，自动告诉你今晚能做什么菜，斤两、买菜钱、热量一次算清。</p>
+  <a class="cta" href="/cook">开始做菜 →</a>
 
   <div class="demo-wrap">
-    <div class="demo-card sketch">
+    <div class="demo-card">
       <div class="demo-text">
-        <div class="d1">比如：猪肉 300 克，到底买多少？</div>
-        <div class="d2">≈ 1.2 个拳头，6 两（价格实时取自新发地）</div>
-      </div>
-      <div class="demo-img">
-        <img src="/api/visual?food=%E7%8C%AA%E8%82%89&amount=300&unit=%E5%85%8B" alt="猪肉300克可视化示意图">
+        <div class="d1">🍅 + 🥚 → 西红柿炒鸡蛋</div>
+        <div class="d2">斤两、价格、热量，一次算清</div>
       </div>
     </div>
   </div>
 </section>
 
 <section>
-  <h2 class="section-title">做饭的小事，我帮你</h2>
+  <h2 class="section-title">做饭需要的，都帮你算好了</h2>
   <div class="features">
-    <div class="feature sketch">
-      <span class="sticker">🍳</span>
-      <h3>今晚吃什么</h3>
-      <p>不知道吃啥？随机推荐一道菜，连买菜钱都算好。</p>
-      <a class="feature-link" href="/recommend">随机推荐一道菜 →</a>
-    </div>
-    <div class="feature sketch2">
+    <div class="feature">
       <span class="sticker">✊</span>
       <h3>看懂斤两</h3>
-      <p>300 克 ≈ 一个拳头，配图一看就懂。（已上线）</p>
+      <p>300 克猪肉 ≈ 一个拳头，配图一看就懂。</p>
+      <a class="feature-link" href="/converter">去换算 →</a>
     </div>
-    <div class="feature sketch">
+    <div class="feature">
       <span class="sticker">🧺</span>
       <h3>算清买菜钱</h3>
-      <p>自动生成购物清单，花多少钱心里有数。（即将上线）</p>
+      <p>多道菜合并成购物清单，一共多少钱。</p>
+      <a class="feature-link" href="/shopping">去算账 →</a>
+    </div>
+    <div class="feature">
+      <span class="sticker">🔥</span>
+      <h3>菜品热量</h3>
+      <p>每道菜多少大卡，心里有数。</p>
+      <a class="feature-link" href="/recipes">看菜谱 →</a>
     </div>
   </div>
 </section>
