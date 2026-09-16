@@ -1,4 +1,5 @@
 """菜谱：浏览、添加、删除，并自动算出食材重量和价格。"""
+import re
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Form, Query, Request
@@ -140,7 +141,8 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
     """选食材，看能做出哪些菜（可勾选 + 自由输入其他食材）。"""
     try:
         selected = set(foods)
-        for c in custom.replace("，", ",").split(","):
+        # 支持顿号、逗号、空格等多种分隔符
+        for c in re.split(r"[,，、\s]+", custom):
             c = c.strip()
             if c:
                 selected.add(c)
