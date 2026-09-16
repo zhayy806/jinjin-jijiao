@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import func
 from sqlalchemy.orm import Session, selectinload
 
 from ..db import SessionLocal
@@ -94,6 +95,28 @@ def create_recipe(
     except Exception:
         db.rollback()
     return RedirectResponse("/recipes", status_code=303)
+
+
+@router.get("/recommend", response_class=HTMLResponse)
+def recommend(request: Request, db: Session = Depends(get_db)):
+    """随机推荐一道菜（今晚吃什么）。"""
+    try:
+        recipe = (
+            db.query(Recipe)
+            .options(selectinload(Recipe.ingredients))
+            .order_by(func.rand())
+            .first()
+        )
+        if recipe is None:
+            return RedirectResponse("/recipes", status_code=303)
+        row = _enrich(recipe)
+        return templates.TemplateResponse(
+            "recommend.html", {"request": request, "row": row, "db_error": None}
+        )
+    except Exception:
+        return templates.TemplateResponse(
+            "recommend.html", {"request": request, "row": None, "db_error": DB_DOWN_MSG}
+        )
 
 
 @router.post("/recipes/{recipe_id}/delete")

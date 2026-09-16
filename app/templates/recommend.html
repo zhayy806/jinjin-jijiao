@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}今晚吃什么 · 斤斤计较{% endblock %}
+
+{% block content %}
+<section class="converter">
+  <h1>今晚吃啥？</h1>
+  <p class="subtitle">随机给你推荐一道菜，连买菜钱都算好了。</p>
+
+  {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
+
+  {% if row %}
+  <div class="card sketch">
+    <h2 class="recipe-name">🍽️ {{ row.recipe.name }}</h2>
+    <p class="recipe-total">这顿饭 ≈ <strong>{{ row.total }}</strong> 元</p>
+    <ul class="ing-list">
+      {% for it in row["items"] %}
+      <li>{{ it.food }} {{ it.quantity }}{{ it.unit }} · ≈ {{ it.grams }} 克 · {{ it.price }} 元</li>
+      {% endfor %}
+    </ul>
+    {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+    <div class="actions" style="justify-content: center;">
+      <a class="btn" href="/recommend">换一道 →</a>
+      <a class="btn ghost" href="/recipes">看全部菜谱</a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
