@@ -122,7 +122,7 @@ def create_recipe(
         db.flush()  # 拿到 recipe.id
         for f, q, u in zip(food, quantity, unit):
             f = (f or "").strip()
-            if not f or f not in portion.FOODS:
+            if not f:
                 continue
             try:
                 q_val = float(q)
@@ -136,10 +136,14 @@ def create_recipe(
 
 
 @router.get("/cook", response_class=HTMLResponse)
-def cook(request: Request, foods: list[str] = Query(default=[]), db: Session = Depends(get_db)):
-    """选食材，看能做出哪些菜。"""
+def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Query(default=""), db: Session = Depends(get_db)):
+    """选食材，看能做出哪些菜（可勾选 + 自由输入其他食材）。"""
     try:
         selected = set(foods)
+        for c in custom.replace("，", ",").split(","):
+            c = c.strip()
+            if c:
+                selected.add(c)
         recipes = db.query(Recipe).options(selectinload(Recipe.ingredients)).all()
         matches = []
         if selected:
@@ -153,6 +157,7 @@ def cook(request: Request, foods: list[str] = Query(default=[]), db: Session = D
                 "request": request,
                 "foods": portion.FOODS,
                 "selected": selected,
+                "custom_input": custom,
                 "matches": matches,
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": None,
@@ -165,6 +170,7 @@ def cook(request: Request, foods: list[str] = Query(default=[]), db: Session = D
                 "request": request,
                 "foods": portion.FOODS,
                 "selected": set(),
+                "custom_input": custom,
                 "matches": [],
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": DB_DOWN_MSG,

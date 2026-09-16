@@ -20,6 +20,11 @@
         </label>
         {% endfor %}
       </div>
+      <div class="custom-food">
+        <label>还有其他食材？直接输入（逗号分隔）
+          <input name="custom" placeholder="比如：螃蟹、海参、鲍鱼" value="{{ custom_input }}">
+        </label>
+      </div>
       <button type="submit">看看能做什么菜 →</button>
     </div>
   </form>

@@ -27,16 +27,16 @@
         </label>
       </div>
 
-      <div class="ing-label">食材（选食材 + 填数量 + 选单位）</div>
+      <div class="ing-label">食材（可选可输入 + 填数量 + 选单位）</div>
       <div class="ingredient-rows">
         {% for i in range(6) %}
         <div class="ing-row">
-          <select name="food">
-            <option value="">— 选食材 —</option>
+          <input name="food" list="food-list" placeholder="选或输入食材">
+          <datalist id="food-list">
             {% for f in foods %}
             <option value="{{ f }}">{{ f }}</option>
             {% endfor %}
-          </select>
+          </datalist>
           <input name="quantity" type="number" step="0.5" min="0" placeholder="数量">
           <select name="unit">
             <option value="个">个</option>

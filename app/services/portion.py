@@ -56,7 +56,10 @@ def grams_from(food: str, quantity: float, unit: str):
     """根据食材、数量、单位算出克数（个/只/条/根/颗/块/把 按参照物重量换算）。"""
     if unit in UNITS:
         return to_grams(quantity, unit)
-    return quantity * FOODS[food]["ref_grams"]
+    info = FOODS.get(food)
+    if info is None:
+        return None  # 未知食材，无法按计数单位换算重量
+    return quantity * info["ref_grams"]
 
 
 def convert(food: str, amount: float, unit: str, price_per_jin: float = None) -> dict:
