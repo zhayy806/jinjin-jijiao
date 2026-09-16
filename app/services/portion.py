@@ -30,6 +30,18 @@ FOODS = {
     "大米":   {"ref_noun": "碗米饭",   "ref_grams": 180, "food_emoji": "🍚", "ref_emoji": "🍚", "calories": 130},
     "面粉":   {"ref_noun": "碗面粉",   "ref_grams": 150, "food_emoji": "🌾", "ref_emoji": "🥣", "calories": 364},
     "菌菇":   {"ref_noun": "把",       "ref_grams": 300, "food_emoji": "🍄", "ref_emoji": "🍄", "calories": 22},
+    "虾":     {"ref_noun": "只",       "ref_grams": 30,  "food_emoji": "🦐", "ref_emoji": "🦐", "calories": 99},
+    "鱼":     {"ref_noun": "条",       "ref_grams": 500, "food_emoji": "🐟", "ref_emoji": "🐟", "calories": 100},
+    "小龙虾": {"ref_noun": "只",       "ref_grams": 25,  "food_emoji": "🦞", "ref_emoji": "🦞", "calories": 90},
+    "皮皮虾": {"ref_noun": "只",       "ref_grams": 30,  "food_emoji": "🦐", "ref_emoji": "🦐", "calories": 85},
+    "豆腐":   {"ref_noun": "块",       "ref_grams": 200, "food_emoji": "🍲", "ref_emoji": "🍲", "calories": 76},
+    "青椒":   {"ref_noun": "个",       "ref_grams": 60,  "food_emoji": "🫑", "ref_emoji": "🫑", "calories": 22},
+    "洋葱":   {"ref_noun": "个",       "ref_grams": 150, "food_emoji": "🧅", "ref_emoji": "🧅", "calories": 40},
+    "白菜":   {"ref_noun": "颗",       "ref_grams": 600, "food_emoji": "🥗", "ref_emoji": "🥗", "calories": 13},
+    "黄瓜":   {"ref_noun": "根",       "ref_grams": 200, "food_emoji": "🥒", "ref_emoji": "🥒", "calories": 15},
+    "茄子":   {"ref_noun": "个",       "ref_grams": 200, "food_emoji": "🍆", "ref_emoji": "🍆", "calories": 25},
+    "韭菜":   {"ref_noun": "把",       "ref_grams": 200, "food_emoji": "🌿", "ref_emoji": "🌿", "calories": 25},
+    "羊肉":   {"ref_noun": "个拳头",   "ref_grams": 250, "food_emoji": "🥩", "ref_emoji": "✊", "calories": 200},
 }
 
 UNITS = {"克": 1, "两": GRAM_PER_LIANG, "斤": GRAM_PER_JIN}
@@ -41,12 +53,10 @@ def to_grams(amount: float, unit: str) -> float:
 
 
 def grams_from(food: str, quantity: float, unit: str):
-    """根据食材、数量、单位算出克数（「个」按参照物重量换算）。"""
+    """根据食材、数量、单位算出克数（个/只/条/根/颗/块/把 按参照物重量换算）。"""
     if unit in UNITS:
         return to_grams(quantity, unit)
-    if unit == "个":
-        return quantity * FOODS[food]["ref_grams"]
-    return None
+    return quantity * FOODS[food]["ref_grams"]
 
 
 def convert(food: str, amount: float, unit: str, price_per_jin: float = None) -> dict:
