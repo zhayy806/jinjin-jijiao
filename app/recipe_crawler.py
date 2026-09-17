@@ -92,14 +92,14 @@ def _save(recipe: dict):
     return True
 
 
-def crawl(start_id: int, target: int, min_delay: float = 1.5, max_delay: float = 3.5, max_backoff: int = 60) -> int:
+def crawl(start_id: int, target: int, min_delay: float = 1.5, max_delay: float = 3.5, max_backoff: int = 300) -> int:
     """从 start_id 开始抓，直到抓到 target 道菜，返回抓到数量。
 
     反爬对策：
     1. 用 curl_cffi 伪装成 Chrome 的 TLS 指纹，绕过豆果的 JA3 指纹识别（httpx 会被 403）；
     2. 保持会话 Cookie（先访问首页建立 cookie）；
     3. 每次请求随机延时 1.5~3.5 秒，模拟真人浏览；
-    4. 遇到 403/429 指数退避等待（最多 60 秒）后重试。
+    4. 遇到 403/429 指数退避（最多 300 秒），并尊重 Retry-After 头，等待后重试同一道菜。
     """
     got = 0
     recipe_id = start_id
@@ -112,15 +112,18 @@ def crawl(start_id: int, target: int, min_delay: float = 1.5, max_delay: float =
             pass
         while got < target:
             url = f"https://www.douguo.com/cookbook/{recipe_id}.html"
-            recipe_id += 1
             try:
                 resp = client.get(url)
                 if resp.status_code in (403, 429):
-                    # 被反爬：指数退避
+                    # 被反爬：指数退避，尊重 Retry-After，重试同一道菜（不跳过）
                     backoff = min(backoff * 2 or 10, max_backoff)
+                    ra = resp.headers.get("Retry-After", "")
+                    if ra.isdigit():
+                        backoff = min(int(ra) + 1, max_backoff)
                     print(f"⚠️ 被反爬（HTTP {resp.status_code}），等待 {backoff}s 后重试…", flush=True)
                     time.sleep(backoff)
                     continue
+                recipe_id += 1  # 这个 ID 已处理完，前进
                 if resp.status_code != 200:
                     continue
                 recipe = parse_recipe(resp.text)
@@ -133,6 +136,7 @@ def crawl(start_id: int, target: int, min_delay: float = 1.5, max_delay: float =
                         print(f"已抓 {got} 道菜（当前 ID {recipe_id}）", flush=True)
             except Exception as e:
                 logger.warning("抓取 %s 失败：%s", url, e)
+                recipe_id += 1  # 网络异常，跳过这个 ID
             time.sleep(random.uniform(min_delay, max_delay))
     finally:
         client.close()
