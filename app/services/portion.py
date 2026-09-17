@@ -46,6 +46,9 @@ FOODS = {
 
 UNITS = {"克": 1, "两": GRAM_PER_LIANG, "斤": GRAM_PER_JIN}
 
+# 无固定重量的单位：菜谱里写「份/适量/少许」时，无法换算成克数
+NO_WEIGHT_UNITS = {"份", "适量", "少许"}
+
 
 def to_grams(amount: float, unit: str) -> float:
     """把任意单位换算成克。"""
@@ -56,6 +59,8 @@ def grams_from(food: str, quantity: float, unit: str):
     """根据食材、数量、单位算出克数（个/只/条/根/颗/块/把 按参照物重量换算）。"""
     if unit in UNITS:
         return to_grams(quantity, unit)
+    if unit in NO_WEIGHT_UNITS:
+        return None  # 份/适量/少许：没有固定重量，不算克数
     info = FOODS.get(food)
     if info is None:
         return None  # 未知食材，无法按计数单位换算重量
