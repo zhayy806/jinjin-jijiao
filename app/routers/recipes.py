@@ -154,12 +154,14 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 if r_foods and r_foods.issubset(selected):
                     row = _enrich(r)
                     row["used"] = sorted(r_foods)  # 用到的用户食材
+                    row["missing"] = sorted(selected - r_foods)  # 没用上的用户食材
                     matches.append(row)
             matches.sort(key=lambda x: len(x["used"]), reverse=True)
         used_all = set()
         for m in matches:
             used_all |= set(m["used"])
-        unused = sorted(selected - used_all)
+        unused = sorted(selected - used_all)  # 没有任何菜谱用到的食材
+        max_used = max((len(m["used"]) for m in matches), default=0)
         return templates.TemplateResponse(
             "cook.html",
             {
@@ -169,6 +171,8 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 "custom_input": custom,
                 "matches": matches,
                 "unused": unused,
+                "max_used": max_used,
+                "selected_count": len(selected),
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": None,
             },
@@ -183,6 +187,8 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 "custom_input": custom,
                 "matches": [],
                 "unused": [],
+                "max_used": 0,
+                "selected_count": 0,
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": DB_DOWN_MSG,
             },
