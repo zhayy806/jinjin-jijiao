@@ -5,7 +5,7 @@
 {% block content %}
 <section class="converter">
   <h1>今天有什么食材？</h1>
-  <p class="subtitle">勾选你手头的食材，看看能做哪些菜。</p>
+  <p class="subtitle">勾选你手头的食材，看看能做哪些菜；凑不出一道也能各配一道。</p>
 
   {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
 
@@ -31,33 +31,83 @@
 
   {% if selected %}
   <div class="recipe-list">
-    {% if matches %}
-    {% if max_used >= selected_count %}
-    <h2 class="cat-title">这些食材能做出 <span class="cat-count">{{ matches|length }} 道</span></h2>
-    {% else %}
-    <div class="warn-banner">⚠️ 你选了 {{ selected_count }} 样食材，但没有一道菜能全部用上（最多同时用到 {{ max_used }} 样）。下面是只用到其中一部分的菜：</div>
-    {% endif %}
-    {% for row in matches %}
-    <div class="recipe-card">
-      <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></h3>
-      <p class="meta-line">用到：{% for f in row["used"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}{% if row["missing"] %}　·　没用上：{% for f in row["missing"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}{% endif %}</p>
-      <div class="ing-chips">
-        {% for it in row["items"] %}
-        <span class="ing-chip">
-          <span class="emoji">{{ it.emoji }}</span>
-          {{ it.food }}
-          <span class="amount">{{ it.quantity }}{{ it.unit }}</span>
-        </span>
-        {% endfor %}
+    {% if combos %}
+      <h2 class="cat-title">能一起做的菜 <span class="cat-count">{{ combos|length }} 道</span></h2>
+      {% for row in combos %}
+      <div class="recipe-card">
+        <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></h3>
+        <p class="meta-line">用到：{% for f in row["used"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}{% if row["also_needs"] %}　·　还要准备：{% for f in row["also_needs"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}{% endif %}{% if row["missing"] %}　·　没用上：{% for f in row["missing"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}{% endif %}</p>
+        <div class="ing-chips">
+          {% for it in row["items"] %}
+          <span class="ing-chip">
+            <span class="emoji">{{ it.emoji }}</span>
+            {{ it.food }}
+            <span class="amount">{{ it.quantity }}{{ it.unit }}</span>
+          </span>
+          {% endfor %}
+        </div>
+        {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
       </div>
-      {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {% if pairing_hits %}
+    <h2 class="cat-title">💡 食材搭配灵感 <span class="cat-count">{{ pairing_hits|length }} 个</span></h2>
+    {% for p in pairing_hits %}
+    <div class="recipe-card">
+      <h3>🍽️ {{ p.dish }} <span class="cat-badge" style="color:#0d9488; border-color:#0d9488;">搭配</span></h3>
+      <p class="meta-line">用到：{% for f in p.foods %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
+      <p class="steps">{{ p.note }}</p>
     </div>
     {% endfor %}
-    {% if unused %}<p class="empty">另外，这些食材没有任何菜谱用到：{% for f in unused %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>{% endif %}
-    {% else %}
-    <p class="empty">这些食材做不出一道完整的菜，再多勾选几个食材吧～</p>
+    {% endif %}
+
+    {% if per_food %}
+      {% if combos or pairing_hits %}
+      <h2 class="cat-title">单食材也能做一道</h2>
+      {% elif selected_count >= 2 %}
+      <div class="warn-banner">⚠️ 你选的 {{ selected_count }} 样食材没法一起做成一道菜，就各配一道合适的：</div>
+      {% else %}
+      <h2 class="cat-title">可以做成</h2>
+      {% endif %}
+      {% for row in per_food %}
+      <div class="recipe-card">
+        <h3>{{ row.main_food }} → 🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></h3>
+        {% if row.also_needs %}
+        <p class="meta-line">这道菜还需要：{% for f in row.also_needs %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
+        {% else %}
+        <p class="meta-line">用你手头的食材就够了 👍</p>
+        {% endif %}
+        <div class="ing-chips">
+          {% for it in row["items"] %}
+          <span class="ing-chip">
+            <span class="emoji">{{ it.emoji }}</span>
+            {{ it.food }}
+            <span class="amount">{{ it.quantity }}{{ it.unit }}</span>
+          </span>
+          {% endfor %}
+        </div>
+        {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    {% if no_recipe %}
+    <p class="empty">这 {{ no_recipe|length }} 样食材暂时没找到菜谱：{% for f in no_recipe %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}，可以去「菜谱」页自己加一道。</p>
+    {% endif %}
+
+    {% if not combos and not per_food %}
+    <p class="empty">这些食材做不出一道菜，再多选几个食材吧～</p>
     {% endif %}
   </div>
   {% endif %}
 </section>
+
+<script>
+document.querySelectorAll('.food-check input[type="checkbox"]').forEach(function (cb) {
+  cb.addEventListener('change', function () {
+    cb.closest('.food-check').classList.toggle('checked', cb.checked);
+  });
+});
+</script>
 {% endblock %}

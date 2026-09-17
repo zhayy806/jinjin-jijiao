@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}菜品热量 · 斤斤计较{% endblock %}
+
+{% block content %}
+<section class="converter">
+  <h1>菜品热量</h1>
+  <p class="subtitle">算算一份食材多少大卡，再挑更轻负担的菜。</p>
+
+  {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
+
+  <div class="card">
+    <h2 class="form-title">🔥 热量计算器</h2>
+    <div class="row">
+      <label>食材
+        <select id="food">
+          {% for name in foods %}
+          <option value="{{ name }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>重量
+        <input id="amount" type="number" step="0.1" value="100" min="0">
+      </label>
+      <label>单位
+        <select id="unit">
+          <option value="克">克</option>
+          <option value="两">两</option>
+          <option value="斤">斤</option>
+        </select>
+      </label>
+    </div>
+    <button onclick="calcKcal()">算热量</button>
+    <div id="kcal-result" class="result hidden">
+      <div class="big-line" id="kcal-line"></div>
+      <div class="sub-line" id="kcal-sub"></div>
+    </div>
+  </div>
+
+  <div class="card sketch" style="margin-top:20px; max-width:760px;">
+    <h2 class="form-title">📊 常见食材热量表（每 100 克）</h2>
+    <table class="shop-table">
+      <tr><th>食材</th><th>每100克</th><th>一份≈</th><th>标签</th></tr>
+      {% for f in food_rows %}
+      <tr>
+        <td>{{ f.emoji }} {{ f.name }}</td>
+        <td>{{ f.per100 }} 大卡</td>
+        <td>1{{ f.ref_noun }} ≈ {{ f.serving_kcal }} 大卡</td>
+        <td>
+          {% if f.per100 < 80 %}<span class="kcal-tag kcal-low">低卡</span>
+          {% elif f.per100 < 200 %}<span class="kcal-tag kcal-mid">中卡</span>
+          {% else %}<span class="kcal-tag kcal-high">高卡</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  {% if recipe_rows %}
+  <div class="card sketch" style="margin-top:20px; max-width:760px;">
+    <h2 class="form-title">🍽️ 菜谱热量榜（每道菜总热量，从轻到重）</h2>
+    <table class="shop-table">
+      <tr><th>菜</th><th>总热量</th></tr>
+      {% for r in recipe_rows %}
+      <tr>
+        <td>{{ r.recipe.name }}</td>
+        <td>
+          {% if r.total_kcal < 200 %}<span class="kcal-tag kcal-low">低卡</span>
+          {% elif r.total_kcal < 600 %}<span class="kcal-tag kcal-mid">中卡</span>
+          {% else %}<span class="kcal-tag kcal-high">高卡</span>{% endif %}
+          {{ r.total_kcal }} 大卡
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+<script>
+async function calcKcal() {
+  const food = document.getElementById('food').value;
+  const amount = document.getElementById('amount').value;
+  const unit = document.getElementById('unit').value;
+  const resp = await fetch(`/api/calories?food=${encodeURIComponent(food)}&amount=${amount}&unit=${encodeURIComponent(unit)}`);
+  const data = await resp.json();
+  if (data.error) {
+    document.getElementById('kcal-line').textContent = data.error;
+    document.getElementById('kcal-sub').textContent = '';
+  } else {
+    document.getElementById('kcal-line').textContent = `${data.input} ${data.food} ≈ ${data.kcal} 大卡`;
+    document.getElementById('kcal-sub').textContent = `也就是 ${data.grams} 克；快走约 ${data.minutes} 分钟能消耗掉`;
+  }
+  document.getElementById('kcal-result').classList.remove('hidden');
+}
+</script>
+{% endblock %}

@@ -79,9 +79,11 @@
       {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
       <div class="actions">
         <form method="post" action="/recipes/{{ row.recipe.id }}/toggle-list">
+          <input type="hidden" name="page" value="{{ page }}">
           <button type="submit" class="toggle-btn">{{ '移出清单' if row.recipe.in_list else '加入清单' }}</button>
         </form>
         <form method="post" action="/recipes/{{ row.recipe.id }}/delete" onsubmit="return confirm('确定删除这道菜吗？')">
+          <input type="hidden" name="page" value="{{ page }}">
           <button type="submit" class="delete-btn">删除</button>
         </form>
       </div>
@@ -91,5 +93,13 @@
       {% if not db_error %}<p class="empty">还没有菜谱，先加一道你爱吃的菜吧～</p>{% endif %}
     {% endfor %}
   </div>
+
+  {% if total_pages > 1 %}
+  <div class="pager">
+    {% if page > 1 %}<a class="btn ghost" href="/recipes?page={{ page - 1 }}">← 上一页</a>{% else %}<span class="btn ghost disabled">← 上一页</span>{% endif %}
+    <span class="page-info">第 {{ page }} / {{ total_pages }} 页 · 共 {{ total }} 道菜</span>
+    {% if page < total_pages %}<a class="btn ghost" href="/recipes?page={{ page + 1 }}">下一页 →</a>{% else %}<span class="btn ghost disabled">下一页 →</span>{% endif %}
+  </div>
+  {% endif %}
 </section>
 {% endblock %}

@@ -102,6 +102,24 @@ def api_visual(food: str, amount: float, unit: str):
     return Response(content=svg, media_type="image/svg+xml")
 
 
+@app.get("/api/calories")
+def api_calories(food: str, amount: float, unit: str):
+    """算一份食材的热量（大卡）以及快走多久能消耗掉。"""
+    if food not in portion.FOODS:
+        return {"error": f"不认识的食材：{food}"}
+    if unit not in portion.UNITS:
+        return {"error": f"不认识的单位：{unit}"}
+    grams = portion.to_grams(amount, unit)
+    kcal = round(grams * portion.FOODS[food]["calories"] / 100)
+    return {
+        "food": food,
+        "input": f"{amount:g} {unit}",
+        "grams": round(grams, 1),
+        "kcal": kcal,
+        "minutes": round(kcal / 5),
+    }
+
+
 @app.post("/admin/scrape")
 def trigger_scrape():
     """手动触发一次爬取（演示/调试用）。"""

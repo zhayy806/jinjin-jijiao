@@ -4,6 +4,7 @@
 流程：POST 请求价格接口 → 解析「品名 + 平均价」→ 覆盖写入 MySQL。
 """
 import logging
+import time
 from datetime import datetime
 
 import httpx
@@ -48,6 +49,9 @@ FOOD_ALIASES = {
     "羊肉": ["羊肉", "羊腩"],
 }
 
+# 我们只关心这些品名；抓取时过滤掉无关数据，避免每次给数据库塞进几千条
+ALIAS_NAMES = {name for names in FOOD_ALIASES.values() for name in names}
+
 
 def parse_payload(payload: dict) -> list:
     """把接口返回的 JSON 解析成 [{food, price, place, source}, ...]。"""
@@ -81,6 +85,10 @@ def scrape_prices() -> int:
         return 0
     if not rows:
         return 0
+    # 只存我们关心的品名，避免每次给 TiDB 塞进几千条无关数据
+    rows = [r for r in rows if r["food"] in ALIAS_NAMES]
+    if not rows:
+        return 0
     now = datetime.utcnow()
     with SessionLocal() as db:
         db.query(Price).delete()
@@ -91,12 +99,21 @@ def scrape_prices() -> int:
     return len(rows)
 
 
+# 进程内缓存：一次页面渲染会反复查同一批食材，避免给 TiDB 开成百上千个连接
+_price_cache = {}
+
+
 def get_latest_price(food: str):
-    """查询某食材的最新均价（元/斤），没抓到返回 None。"""
+    """查询某食材的最新均价（元/斤），没抓到返回 None。结果缓存 5 分钟。"""
+    hit = _price_cache.get(food)
+    if hit and time.monotonic() - hit[0] < 300:
+        return hit[1]
     aliases = FOOD_ALIASES.get(food, [food])
     with SessionLocal() as db:
         avg = db.query(func.avg(Price.price)).filter(Price.food.in_(aliases)).scalar()
-    return round(float(avg), 2) if avg else None
+    price = round(float(avg), 2) if avg else None
+    _price_cache[food] = (time.monotonic(), price)
+    return price
 
 
 def get_last_update():

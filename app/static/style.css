@@ -325,3 +325,22 @@ footer {
   .hero h1 { font-size: 32px; }
   .nav { padding: 12px 20px; }
 }
+
+/* ===== 买菜算账 / 热量表格 ===== */
+.shop-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 15px; }
+.shop-table th, .shop-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; }
+.shop-table th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.shop-table td:last-child, .shop-table th:last-child { text-align: right; }
+.grand-total { text-align: right; font-size: 16px; color: var(--muted); margin-top: 14px; }
+.grand-total strong { color: var(--primary); font-size: 24px; }
+
+.kcal-tag { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 700; }
+.kcal-low { background: #e8f7ee; color: #16a34a; }
+.kcal-mid { background: #fff7e6; color: #b45309; }
+.kcal-high { background: #fee2e2; color: #dc2626; }
+
+/* 分页 */
+.pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 28px auto 0; max-width: 640px; }
+.pager .btn { width: auto; }
+.page-info { color: var(--muted); font-size: 14px; }
+.btn.disabled { opacity: 0.4; pointer-events: none; }

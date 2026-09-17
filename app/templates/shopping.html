@@ -1,33 +1,84 @@
 {% extends "base.html" %}
 
-{% block title %}购物清单 · 斤斤计较{% endblock %}
+{% block title %}买菜算账 · 斤斤计较{% endblock %}
 
 {% block content %}
 <section class="converter">
-  <h1>我的购物清单</h1>
-  <p class="subtitle">把你「加入清单」的菜，汇总成要买什么、一共多少钱。</p>
+  <h1>算清买菜钱</h1>
+  <p class="subtitle">手动填食材，或者把想做的菜「加入清单」，一次算出要买多少、一共多少钱。</p>
 
   {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
 
-  {% if recipe_names %}
-  <p class="subtitle">已加入：{% for n in recipe_names %}{{ n }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
-  {% endif %}
-
   <div class="card sketch">
+    <h2 class="form-title">🧺 手动算几样菜钱</h2>
+    <form method="post" action="/shopping">
+      <div class="ing-label">食材（选或输入）+ 数量 + 单位</div>
+      <datalist id="food-list">
+        {% for f in foods %}
+        <option value="{{ f }}">{{ f }}</option>
+        {% endfor %}
+      </datalist>
+      <div class="ingredient-rows">
+        {% for i in range(6) %}
+        <div class="ing-row">
+          <input name="food" list="food-list" placeholder="食材">
+          <input name="quantity" type="number" step="0.5" min="0" placeholder="数量">
+          <select name="unit">
+            <option value="斤">斤</option>
+            <option value="两">两</option>
+            <option value="克">克</option>
+            <option value="个">个</option>
+            <option value="只">只</option>
+            <option value="条">条</option>
+            <option value="根">根</option>
+            <option value="颗">颗</option>
+            <option value="块">块</option>
+            <option value="把">把</option>
+          </select>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="submit">算一下多少钱 →</button>
+    </form>
+
+    {% if direct_items %}
+    <div class="result">
+      <table class="shop-table">
+        <tr><th>食材</th><th>数量</th><th>重量</th><th>单价(元/斤)</th><th>小计</th></tr>
+        {% for it in direct_items %}
+        <tr>
+          <td>{{ it.food }}</td>
+          <td>{{ it.quantity }}{{ it.unit }}</td>
+          <td>{% if it.grams %}{{ it.grams }}克（{{ it.jin }}斤）{% else %}—{% endif %}</td>
+          <td>{% if it.ppj %}{{ it.ppj }}{% else %}暂无{% endif %}</td>
+          <td>{% if it.price %}{{ it.price }}元{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <p class="grand-total">小计 ≈ <strong>{{ direct_total }}</strong> 元</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card sketch" style="margin-top:20px;">
+    <h2 class="form-title">📝 加入清单的菜（自动汇总）</h2>
+    {% if recipe_names %}<p class="subtitle">已加入：{% for n in recipe_names %}{{ n }}{% if not loop.last %}、{% endif %}{% endfor %}</p>{% endif %}
     {% if items %}
     <table class="shop-table">
       <tr><th>食材</th><th>要买多少</th><th>价格</th></tr>
       {% for it in items %}
       <tr>
         <td>{{ it.food }}</td>
-        <td>{{ it.grams }} 克（{{ it.jin }} 斤）</td>
-        <td>{% if it.price %}{{ it.price }} 元{% else %}暂无{% endif %}</td>
+        <td>{{ it.grams }}克（{{ it.jin }}斤）</td>
+        <td>{% if it.price %}{{ it.price }}元{% else %}暂无{% endif %}</td>
       </tr>
       {% endfor %}
     </table>
     <p class="grand-total">合计 ≈ <strong>{{ total }}</strong> 元</p>
+    {% elif recipe_names %}
+    <p class="empty">这些菜的食材写的是「份」没有固定数量，算不出要买多少。请在上面的手动算账里填具体重量。</p>
     {% else %}
-    <p class="empty">清单是空的。去「我的菜谱」给喜欢的菜点「加入清单」吧～</p>
+    <p class="empty">清单是空的。去「菜谱」给想做的菜点「加入清单」，这里会自动汇总成买菜清单和总价。</p>
     {% endif %}
   </div>
 </section>
