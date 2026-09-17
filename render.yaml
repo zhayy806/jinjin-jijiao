@@ -1,0 +1,21 @@
+# Render Blueprint —— 一键部署「斤斤计较」
+# 用法：Render 面板 New > Blueprint > 选中本仓库，部署时只需填 MYSQL_PASSWORD。
+services:
+  - type: web
+    name: jinjin-jijiao
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: MYSQL_HOST
+        value: gateway01.ap-southeast-1.prod.aws.tidbcloud.com
+      - key: MYSQL_PORT
+        value: "4000"
+      - key: MYSQL_USER
+        value: 3JJyrTC38yAE2fS.root
+      - key: MYSQL_PASSWORD
+        sync: false   # 密码只在 Render 面板填写，不提交到 GitHub
+      - key: MYSQL_DB
+        value: jinjin
+      - key: MYSQL_SSL
+        value: "1"
