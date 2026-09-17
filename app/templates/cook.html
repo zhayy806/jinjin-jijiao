@@ -47,6 +47,7 @@
           {% endfor %}
         </div>
         {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+        <a class="video-link" target="_blank" rel="noopener" href="https://search.bilibili.com/all?keyword={{ (row.recipe.name ~ ' 做法')|urlencode }}">🎬 看视频学做 →</a>
       </div>
       {% endfor %}
     {% endif %}
@@ -57,7 +58,8 @@
     <div class="recipe-card">
       <h3>🍽️ {{ p.dish }} <span class="cat-badge" style="color:#0d9488; border-color:#0d9488;">搭配</span></h3>
       <p class="meta-line">用到：{% for f in p.foods %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
-      <p class="steps">{{ p.note }}</p>
+      <p class="steps"><strong>做法：</strong>{{ p.steps }}</p>
+      <a class="video-link" target="_blank" rel="noopener" href="https://search.bilibili.com/all?keyword={{ (p.dish ~ ' 做法')|urlencode }}">🎬 看视频学做 →</a>
     </div>
     {% endfor %}
     {% endif %}
@@ -88,6 +90,7 @@
           {% endfor %}
         </div>
         {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+        <a class="video-link" target="_blank" rel="noopener" href="https://search.bilibili.com/all?keyword={{ (row.recipe.name ~ ' 做法')|urlencode }}">🎬 看视频学做 →</a>
       </div>
       {% endfor %}
     {% endif %}

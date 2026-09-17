@@ -77,6 +77,7 @@
         {% endfor %}
       </div>
       {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
+      <a class="video-link" target="_blank" rel="noopener" href="https://search.bilibili.com/all?keyword={{ (row.recipe.name ~ ' 做法')|urlencode }}">🎬 看视频学做 →</a>
       <div class="actions">
         <form method="post" action="/recipes/{{ row.recipe.id }}/toggle-list">
           <input type="hidden" name="page" value="{{ page }}">
