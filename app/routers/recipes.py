@@ -152,7 +152,14 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
             for r in recipes:
                 r_foods = {ing.food for ing in r.ingredients}
                 if r_foods and r_foods.issubset(selected):
-                    matches.append(_enrich(r))
+                    row = _enrich(r)
+                    row["used"] = sorted(r_foods)  # 用到的用户食材
+                    matches.append(row)
+            matches.sort(key=lambda x: len(x["used"]), reverse=True)
+        used_all = set()
+        for m in matches:
+            used_all |= set(m["used"])
+        unused = sorted(selected - used_all)
         return templates.TemplateResponse(
             "cook.html",
             {
@@ -161,6 +168,7 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 "selected": selected,
                 "custom_input": custom,
                 "matches": matches,
+                "unused": unused,
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": None,
             },
@@ -174,6 +182,7 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 "selected": set(),
                 "custom_input": custom,
                 "matches": [],
+                "unused": [],
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": DB_DOWN_MSG,
             },

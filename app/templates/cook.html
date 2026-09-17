@@ -32,11 +32,11 @@
   {% if selected %}
   <div class="recipe-list">
     {% if matches %}
-    <h2 class="cat-title">用这些食材能做 <span class="cat-count">{{ matches|length }} 道</span></h2>
+    <h2 class="cat-title">能做出 <span class="cat-count">{{ matches|length }} 道</span></h2>
     {% for row in matches %}
     <div class="recipe-card">
       <h3>🍽️ {{ row.recipe.name }} <span class="cat-badge" style="color:{{ cat_colors.get(row.recipe.category, '#ff5722') }}; border-color:{{ cat_colors.get(row.recipe.category, '#ff5722') }};">{{ row.recipe.category }}</span></h3>
-      <p class="meta-line">≈ {{ row.total }} 元 · 🔥 {{ row.total_kcal }} 大卡</p>
+      <p class="meta-line">用到你的食材：{% for f in row["used"] %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>
       <div class="ing-chips">
         {% for it in row["items"] %}
         <span class="ing-chip">
@@ -49,6 +49,7 @@
       {% if row.recipe.steps %}<p class="steps"><strong>做法：</strong>{{ row.recipe.steps }}</p>{% endif %}
     </div>
     {% endfor %}
+    {% if unused %}<p class="empty">另外，这些食材暂时没匹配到菜谱：{% for f in unused %}{{ f }}{% if not loop.last %}、{% endif %}{% endfor %}</p>{% endif %}
     {% else %}
     <p class="empty">这些食材做不出一道完整的菜，再多勾选几个食材吧～</p>
     {% endif %}
