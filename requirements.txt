@@ -7,3 +7,5 @@ python-dotenv==1.2.1
 python-multipart==0.0.20
 httpx==0.28.1
 apscheduler==3.11.3
+beautifulsoup4==4.14.3
+curl_cffi==0.13.0

@@ -5,11 +5,12 @@
     （从菜谱 ID 3357000 开始，抓到 300 道为止）
 """
 import logging
+import random
 import re
 import sys
 import time
 
-import httpx
+import curl_cffi.requests as requests
 from bs4 import BeautifulSoup
 
 from .db import SessionLocal
@@ -17,12 +18,8 @@ from .models import Ingredient, Recipe
 
 logger = logging.getLogger("jinjin.crawler")
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-    ),
-}
+# 请求头由 curl_cffi 的 impersonate="chrome" 自动生成（含真实 Chrome 的 UA、Accept、顺序等），
+# 无需手动指定，手动指定反而会破坏 TLS 指纹的一致性。
 
 UNIT_MAP = {
     "g": "克", "克": "克", "kg": "千克", "千克": "千克",
@@ -95,27 +92,50 @@ def _save(recipe: dict):
     return True
 
 
-def crawl(start_id: int, target: int, delay: float = 0.4) -> int:
-    """从 start_id 开始抓，直到抓到 target 道菜，返回抓到数量。"""
+def crawl(start_id: int, target: int, min_delay: float = 1.5, max_delay: float = 3.5, max_backoff: int = 60) -> int:
+    """从 start_id 开始抓，直到抓到 target 道菜，返回抓到数量。
+
+    反爬对策：
+    1. 用 curl_cffi 伪装成 Chrome 的 TLS 指纹，绕过豆果的 JA3 指纹识别（httpx 会被 403）；
+    2. 保持会话 Cookie（先访问首页建立 cookie）；
+    3. 每次请求随机延时 1.5~3.5 秒，模拟真人浏览；
+    4. 遇到 403/429 指数退避等待（最多 60 秒）后重试。
+    """
     got = 0
     recipe_id = start_id
-    while got < target:
-        url = f"https://www.douguo.com/cookbook/{recipe_id}.html"
-        recipe_id += 1
-        try:
-            resp = httpx.get(url, headers=HEADERS, timeout=(5, 8), follow_redirects=True)
-            if resp.status_code != 200:
-                continue
-            recipe = parse_recipe(resp.text)
-            if recipe is None or not recipe["name"] or not recipe["ingredients"]:
-                continue
-            if _save(recipe):
-                got += 1
-                if got % 20 == 0:
-                    print(f"已抓 {got} 道菜（当前 ID {recipe_id}）", flush=True)
-        except Exception as e:
-            logger.warning("抓取 %s 失败：%s", url, e)
-        time.sleep(delay)
+    backoff = 0  # 连续被反爬后的等待秒数
+    client = requests.Session(impersonate="chrome", timeout=15)
+    try:
+        try:  # 先访问首页，建立会话 Cookie
+            client.get("https://www.douguo.com/")
+        except Exception:
+            pass
+        while got < target:
+            url = f"https://www.douguo.com/cookbook/{recipe_id}.html"
+            recipe_id += 1
+            try:
+                resp = client.get(url)
+                if resp.status_code in (403, 429):
+                    # 被反爬：指数退避
+                    backoff = min(backoff * 2 or 10, max_backoff)
+                    print(f"⚠️ 被反爬（HTTP {resp.status_code}），等待 {backoff}s 后重试…", flush=True)
+                    time.sleep(backoff)
+                    continue
+                if resp.status_code != 200:
+                    continue
+                recipe = parse_recipe(resp.text)
+                if recipe is None or not recipe["name"] or not recipe["ingredients"]:
+                    continue
+                if _save(recipe):
+                    got += 1
+                    backoff = 0  # 成功一次就重置退避
+                    if got % 20 == 0:
+                        print(f"已抓 {got} 道菜（当前 ID {recipe_id}）", flush=True)
+            except Exception as e:
+                logger.warning("抓取 %s 失败：%s", url, e)
+            time.sleep(random.uniform(min_delay, max_delay))
+    finally:
+        client.close()
     return got
 
 
@@ -123,6 +143,8 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     start = int(sys.argv[1]) if len(sys.argv) > 1 else 3357000
     target = int(sys.argv[2]) if len(sys.argv) > 2 else 200
-    print(f"开始爬取：从 ID {start} 起，目标 {target} 道", flush=True)
-    n = crawl(start, target)
+    min_delay = float(sys.argv[3]) if len(sys.argv) > 3 else 1.5
+    max_delay = float(sys.argv[4]) if len(sys.argv) > 4 else 3.5
+    print(f"开始爬取：从 ID {start} 起，目标 {target} 道，延时 {min_delay}~{max_delay}s", flush=True)
+    n = crawl(start, target, min_delay=min_delay, max_delay=max_delay)
     print(f"完成，共抓到 {n} 道菜")
