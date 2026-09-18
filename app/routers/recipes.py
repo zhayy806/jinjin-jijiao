@@ -1,6 +1,7 @@
 """菜谱：浏览、添加、删除，并自动算出食材重量和价格。"""
 import math
 import re
+import urllib.parse
 from collections import defaultdict
 from pathlib import Path
 
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session, selectinload
 from ..db import SessionLocal
 from ..models import Ingredient, Recipe
 from ..scraper import get_latest_price
-from ..services import pairings, portion
+from ..services import pairings, portion, synonyms
 
 router = APIRouter()
 templates = Jinja2Templates(directory=Path(__file__).resolve().parent.parent / "templates")
@@ -35,18 +36,19 @@ def _enrich(recipe: Recipe) -> dict:
     total = 0.0
     total_kcal = 0
     for ing in recipe.ingredients:
-        grams = portion.grams_from(ing.food, ing.quantity, ing.unit)
-        ppj = get_latest_price(ing.food)
+        food = synonyms.canonical(ing.food)
+        grams = portion.grams_from(food, ing.quantity, ing.unit)
+        ppj = get_latest_price(food)
         price = round(grams / 500 * ppj, 2) if (grams and ppj) else None
         if price:
             total += price
-        info = portion.FOODS.get(ing.food, {})
+        info = portion.FOODS.get(food, {})
         kcal = round(grams * info.get("calories", 0) / 100) if grams else None
         if kcal:
             total_kcal += kcal
         items.append(
             {
-                "food": ing.food,
+                "food": food,
                 "emoji": info.get("food_emoji", "🍽️"),
                 "quantity": ing.quantity,
                 "unit": ing.unit,
@@ -62,8 +64,9 @@ def _enrich_kcal(recipe: Recipe) -> dict:
     """只算热量、不查价格（热量页用，避免给每条食材各开一次数据库连接）。"""
     total_kcal = 0
     for ing in recipe.ingredients:
-        grams = portion.grams_from(ing.food, ing.quantity, ing.unit)
-        info = portion.FOODS.get(ing.food, {})
+        food = synonyms.canonical(ing.food)
+        grams = portion.grams_from(food, ing.quantity, ing.unit)
+        info = portion.FOODS.get(food, {})
         kcal = round(grams * info.get("calories", 0) / 100) if grams else None
         if kcal:
             total_kcal += kcal
@@ -84,7 +87,7 @@ PER_PAGE = 24
 
 
 @router.get("/recipes", response_class=HTMLResponse)
-def list_recipes(request: Request, page: int = Query(1, ge=1), db: Session = Depends(get_db)):
+def list_recipes(request: Request, page: int = Query(1, ge=1), msg: str = Query(""), db: Session = Depends(get_db)):
     try:
         total = db.query(func.count(Recipe.id)).scalar() or 0
         total_pages = max(1, math.ceil(total / PER_PAGE))
@@ -117,6 +120,7 @@ def list_recipes(request: Request, page: int = Query(1, ge=1), db: Session = Dep
                 "total_pages": total_pages,
                 "total": total,
                 "db_error": None,
+                "msg": msg,
             },
         )
     except Exception:
@@ -131,6 +135,7 @@ def list_recipes(request: Request, page: int = Query(1, ge=1), db: Session = Dep
                 "total_pages": 1,
                 "total": 0,
                 "db_error": DB_DOWN_MSG,
+                "msg": msg,
             },
         )
 
@@ -159,9 +164,11 @@ def create_recipe(
                 continue
             db.add(Ingredient(recipe_id=recipe.id, food=f, quantity=q_val, unit=u))
         db.commit()
+        msg = f"已保存「{recipe.name}」"
     except Exception:
         db.rollback()
-    return RedirectResponse("/recipes", status_code=303)
+        msg = "保存失败：数据库没连上，请稍后重试"
+    return RedirectResponse(f"/recipes?msg={urllib.parse.quote(msg)}", status_code=303)
 
 
 @router.get("/cook", response_class=HTMLResponse)
@@ -174,25 +181,26 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
       3. 都没覆盖到的食材，各推荐一道合适的菜。
     """
     try:
-        selected = set(foods)
+        raw_selected = set(foods)
         for c in re.split(r"[,，、\s]+", custom):
             c = c.strip()
             if c:
-                selected.add(c)
+                raw_selected.add(c)
+        selected = {synonyms.canonical(f) for f in raw_selected}
         recipes = db.query(Recipe).options(selectinload(Recipe.ingredients)).all()
 
         # 食材 → 用到它的菜谱
         by_food = defaultdict(list)
         for r in recipes:
             for ing in r.ingredients:
-                by_food[ing.food].append(r)
+                by_food[synonyms.canonical(ing.food)].append(r)
 
         combos = []  # 能一起做的菜
         combo_ids = set()
         covered = set()
         if selected:
             for r in recipes:
-                r_foods = {ing.food for ing in r.ingredients}
+                r_foods = {synonyms.canonical(ing.food) for ing in r.ingredients}
                 used = r_foods & selected
                 if len(used) >= 2:
                     row = _enrich(r)
@@ -222,12 +230,12 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
                 continue
             candidates.sort(
                 key=lambda r: (
-                    -len({ing.food for ing in r.ingredients} & selected),
+                    -len({synonyms.canonical(ing.food) for ing in r.ingredients} & selected),
                     len(r.ingredients),
                 )
             )
             best = candidates[0]
-            r_foods = {ing.food for ing in best.ingredients}
+            r_foods = {synonyms.canonical(ing.food) for ing in best.ingredients}
             row = _enrich(best)
             row["main_food"] = f
             row["also_needs"] = sorted(r_foods - selected)
@@ -238,13 +246,13 @@ def cook(request: Request, foods: list[str] = Query(default=[]), custom: str = Q
             {
                 "request": request,
                 "foods": portion.FOODS,
-                "selected": selected,
+                "selected": raw_selected,
                 "custom_input": custom,
                 "combos": combos,
                 "pairing_hits": pairing_hits,
                 "per_food": per_food,
                 "no_recipe": no_recipe,
-                "selected_count": len(selected),
+                "selected_count": len(raw_selected),
                 "cat_colors": CATEGORY_COLORS,
                 "db_error": None,
             },
@@ -336,9 +344,13 @@ def delete_recipe(recipe_id: int, page: int = Form(1), db: Session = Depends(get
         if recipe is not None:
             db.delete(recipe)
             db.commit()
+            msg = "已删除这道菜"
+        else:
+            msg = "这道菜不存在"
     except Exception:
         db.rollback()
-    return RedirectResponse(f"/recipes?page={page}", status_code=303)
+        msg = "删除失败，请稍后重试"
+    return RedirectResponse(f"/recipes?page={page}&msg={urllib.parse.quote(msg)}", status_code=303)
 
 
 @router.post("/recipes/{recipe_id}/toggle-list")
@@ -348,6 +360,10 @@ def toggle_list(recipe_id: int, page: int = Form(1), db: Session = Depends(get_d
         if recipe is not None:
             recipe.in_list = not recipe.in_list
             db.commit()
+            msg = "已加入清单" if recipe.in_list else "已移出清单"
+        else:
+            msg = "这道菜不存在"
     except Exception:
         db.rollback()
-    return RedirectResponse(f"/recipes?page={page}", status_code=303)
+        msg = "操作失败，请稍后重试"
+    return RedirectResponse(f"/recipes?page={page}&msg={urllib.parse.quote(msg)}", status_code=303)

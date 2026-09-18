@@ -7,6 +7,7 @@
   <h1>我的菜谱</h1>
   <p class="subtitle">按分类整理，加一道菜自动算出重量、价格、总价。</p>
 
+  {% if msg %}<p class="flash">{{ msg }}</p>{% endif %}
   {% if db_error %}<p class="empty">{{ db_error }}</p>{% endif %}
 
   <div class="card sketch">

@@ -72,6 +72,9 @@ UNITS = {"克": 1, "两": GRAM_PER_LIANG, "斤": GRAM_PER_JIN}
 # 无固定重量的单位：菜谱里写「份/适量/少许」时，无法换算成克数
 NO_WEIGHT_UNITS = {"份", "适量", "少许"}
 
+# 计数单位：按食材的参照物重量换算成克（个/只/条/根/颗/块/把）
+COUNT_UNITS = {"个", "只", "条", "根", "颗", "块", "把"}
+
 
 def to_grams(amount: float, unit: str) -> float:
     """把任意单位换算成克。"""
@@ -91,14 +94,24 @@ def grams_from(food: str, quantity: float, unit: str):
 
 
 def convert(food: str, amount: float, unit: str, price_per_jin: float = None) -> dict:
-    """完整换算：斤两 + 可视化。price_per_jin 为爬虫抓到的真实价，没有则为 None。"""
+    """完整换算：斤两 + 可视化。price_per_jin 为爬虫抓到的真实价，没有则为 None。
+
+    unit 可以是重量单位（克/两/斤），也可以是计数单位（个/只/条/根/颗/块/把），
+    后者按食材的参照物重量换算成克。
+    """
     info = FOODS[food]
-    grams = to_grams(amount, unit)
+    grams = grams_from(food, amount, unit)
 
     jin = grams / GRAM_PER_JIN
     liang = grams / GRAM_PER_LIANG
     count = grams / info["ref_grams"]
     price = round(grams / GRAM_PER_JIN * price_per_jin, 1) if price_per_jin else None
+
+    # 重量输入 → 用「几个拳头/几个鸡蛋」可视化；计数输入 → 直接给克数
+    if unit in UNITS:
+        analogy = f"≈ {count:.1f} {info['ref_noun']}"
+    else:
+        analogy = f"≈ {grams:g} 克"
 
     return {
         "food": food,
@@ -106,7 +119,7 @@ def convert(food: str, amount: float, unit: str, price_per_jin: float = None) ->
         "grams": round(grams, 1),
         "jin": round(jin, 2),
         "liang": round(liang, 2),
-        "analogy": f"≈ {count:.1f} {info['ref_noun']}",
+        "analogy": analogy,
         "price": price,
         "price_per_jin": price_per_jin,
     }

@@ -77,7 +77,7 @@ def converter_page(request: Request):
 def api_convert(food: str, amount: float, unit: str):
     if food not in portion.FOODS:
         return {"error": f"不认识的食材：{food}"}
-    if unit not in portion.UNITS:
+    if unit not in portion.UNITS and unit not in portion.COUNT_UNITS:
         return {"error": f"不认识的单位：{unit}"}
     try:
         real_price = get_latest_price(food)
@@ -94,9 +94,9 @@ def api_convert(food: str, amount: float, unit: str):
 @app.get("/api/visual")
 def api_visual(food: str, amount: float, unit: str):
     """返回一张「斤两可视化」SVG 图片。"""
-    if food not in portion.FOODS or unit not in portion.UNITS:
+    if food not in portion.FOODS or (unit not in portion.UNITS and unit not in portion.COUNT_UNITS):
         return Response(status_code=400)
-    grams = portion.to_grams(amount, unit)
+    grams = portion.grams_from(food, amount, unit)
     count = grams / portion.FOODS[food]["ref_grams"]
     svg = visual.generate_svg(food, count)
     return Response(content=svg, media_type="image/svg+xml")
@@ -107,9 +107,9 @@ def api_calories(food: str, amount: float, unit: str):
     """算一份食材的热量（大卡）以及快走多久能消耗掉。"""
     if food not in portion.FOODS:
         return {"error": f"不认识的食材：{food}"}
-    if unit not in portion.UNITS:
+    if unit not in portion.UNITS and unit not in portion.COUNT_UNITS:
         return {"error": f"不认识的单位：{unit}"}
-    grams = portion.to_grams(amount, unit)
+    grams = portion.grams_from(food, amount, unit)
     kcal = round(grams * portion.FOODS[food]["calories"] / 100)
     return {
         "food": food,
