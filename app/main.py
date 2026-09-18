@@ -53,7 +53,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="斤斤计较",
+    title="美食点单",
     description="帮年轻人看懂斤两的智能做饭助手",
     lifespan=lifespan,
 )
