@@ -1,8 +1,8 @@
-# Render Blueprint —— 一键部署「美食点单」
+# Render Blueprint —— 一键部署「OrderUp」
 # 用法：Render 面板 New > Blueprint > 选中本仓库，部署时只需填 MYSQL_PASSWORD。
 services:
   - type: web
-    name: meishi-didian
+    name: orderup
     runtime: docker
     plan: free
     healthCheckPath: /
