@@ -14,7 +14,7 @@ from . import models  # noqa: F401  确保数据表被注册
 from .db import Base, engine
 from .routers import recipes, shopping
 from .scraper import get_last_update, get_latest_price, scrape_prices
-from .seed import seed_recipes
+from .seed import seed_recipes, sync_seed_steps
 from .services import portion, visual
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -36,6 +36,10 @@ async def lifespan(app: FastAPI):
         seed_recipes()
     except Exception as e:
         logger.warning("种子菜谱灌入失败：%s", e)
+    try:
+        sync_seed_steps()
+    except Exception as e:
+        logger.warning("种子菜谱做法同步失败：%s", e)
     # 定时任务：每 24 小时抓一次菜价，启动时先跑一次
     try:
         scheduler.add_job(
